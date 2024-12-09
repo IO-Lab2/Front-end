@@ -18,10 +18,10 @@ export default function RootLayout({ children }: Readonly<{
     children: ReactNode;
 }>) {
     return (
-        <html lang="pl" className={`${playfair.variable}`}>
-            <body className={`w-screen h-screen bg-gradient-to-tr from-primary to-secondary overflow-clip`}>
+        <html lang="pl" className={`${playfair.variable} antialiased`}>
+            <body className={`w-screen h-screen bg-gradient-to-tr from-primary to-secondary bg-fixed flex flex-col`}>
                 {/* TODO: Header bar icons */}
-                <div className={`bg-black text-white h-16 p-1 flex gap-1`}>
+                <div className={`bg-black text-white h-16 p-1 flex gap-1 flex-shrink-0 flex-grow-0`}>
                     <div className={`bg-white h-full w-auto aspect-square`}>
                     </div>
                     <div className={`bg-white h-full w-auto aspect-[3/2]`}>
@@ -29,7 +29,7 @@ export default function RootLayout({ children }: Readonly<{
                     <div className={`bg-white h-full w-auto aspect-square`}>
                     </div>
                 </div>
-                <div className={`flex justify-center content-center w-full h-full overflow-y-scroll`}>
+                <div className={`flex justify-center content-center flex-1`}>
                     {children}
                 </div>
             </body>
