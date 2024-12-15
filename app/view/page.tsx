@@ -1,14 +1,93 @@
 'use client'
 
-import {FilterViewOption} from "@/components/FilterViewOption";
+import {FilterCheckbox, FilterViewOption} from "@/components/FilterViewOption";
 import {ScientistCell} from "@/components/ScientistCell";
+import {fetchGetOrganizationsFilter, OrganizationBody} from "@/lib/API";
+import {useEffect, useState} from "react";
+import {FilterState} from "@/lib/FilterState";
 
 export default function ViewPage() {
+    const [universities, setUniversities] = useState<OrganizationBody[] | null>(null)
+    const [cathedras, setCathedras] = useState<OrganizationBody[] | null>(null)
+    const [institutes, setInstitutes] = useState<OrganizationBody[] | null>(null)
+
+    useEffect(() => {
+        (async function () {
+            const allOrganizations = await fetchGetOrganizationsFilter() ?? []
+
+            const fetchedUniversities: OrganizationBody[] = []
+            const fetchedCathedras: OrganizationBody[] = []
+            const fetchedInstitutes: OrganizationBody[] = []
+
+            for(const org of allOrganizations) {
+                switch(org.type.toLowerCase()) {
+                    case "cathedra":
+                        fetchedCathedras.push(org)
+                        break
+                    case "university":
+                        fetchedUniversities.push(org)
+                        break
+                    case "institute":
+                        fetchedInstitutes.push(org)
+                        break
+                }
+            }
+
+            setUniversities(fetchedUniversities)
+            setCathedras(fetchedCathedras)
+            setInstitutes(fetchedInstitutes)
+        })()
+    }, [])
+
     return <div className={`w-full h-full flex`}>
-        <div className={`h-full max-h-full w-96 flex-shrink-0 flex flex-col`}>
-            <FilterViewOption header="Uczelnia"/>
-            <FilterViewOption header="Instytut"/>
-            <FilterViewOption header="Katedra"/>
+        <div className={`h-full max-h-full w-[30rem] flex-shrink-0 flex flex-col`}>
+            <FilterViewOption header="Uczelnia">
+                {
+                    universities?.map((uni ) => {
+                        return <FilterCheckbox
+                            key={uni.id}
+                            label={uni.name}
+                            count={0}
+                            onChoice={(isChecked: boolean) => {
+                                if(isChecked) {
+                                    FilterState.universityFilters.add(uni.id)
+                                    console.log(`Added university filter: ${uni.id}`)
+                                } else {
+                                    FilterState.universityFilters.delete(uni.id)
+                                    console.log(`Removed university filter: ${uni.id}`)
+                                }
+                            }}
+                        />
+                    }) ?? []
+                }
+            </FilterViewOption>
+            <FilterViewOption header="Instytut">
+                {
+                    institutes?.map((institute) => {
+                        return <FilterCheckbox
+                            key={institute.id}
+                            label={institute.name}
+                            count={0}
+                            onChoice={(isChecked: boolean) => {
+                                if(isChecked) {
+                                    FilterState.instituteFilters.add(institute.id)
+                                    console.log(`Added institute filter: ${institute.id}`)
+                                } else {
+                                    FilterState.instituteFilters.delete(institute.id)
+                                    console.log(`Removed institute filter: ${institute.id}`)
+                                }
+                            }}
+                        />
+                    }) ?? []
+                }
+            </FilterViewOption>
+            <FilterViewOption header="Katedra">
+                {
+                    cathedras?.map((cathedra, index) => {
+                        return <FilterCheckbox key={index} label={cathedra.name} count={0}/>
+                    }) ?? []
+                }
+            </FilterViewOption>
             <FilterViewOption header="Stanowisko"/>
             <FilterViewOption header="Ilość Publikacji"/>
             <FilterViewOption header="Ilość Punktów Ministerialnych"/>
