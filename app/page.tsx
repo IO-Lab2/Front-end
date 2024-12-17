@@ -7,6 +7,8 @@ import SkipFilterButton from "@/components/SkipFilterButton";
 import {JSX, useState} from "react";
 import {UUID} from "node:crypto";
 import {useRouter} from "next/navigation";
+import {setCookie} from "cookies-next/client";
+import {FilterState} from "@/lib/FilterState";
 
 export default function Home() {
     const router = useRouter()
@@ -33,6 +35,7 @@ export default function Home() {
                 header={`Na początku wybierz uczelnię:`}
                 onChoice={(id: UUID) => {
                     console.log(`Wybrano uniwersytet: ${id}`)
+                    setCookie(FilterState.COOKIE_UNIVERSITIES, id)
                     setUniversityChoice(id)
                 }}
             />
@@ -44,6 +47,7 @@ export default function Home() {
                 parentOrg={universityChoice ?? undefined}
                 onChoice={(id: UUID) => {
                     console.log(`Wybrano instytut: ${id}`)
+                    setCookie(FilterState.COOKIE_INSTITUTES, id)
                     router.push("/view")
                 }}
             />
