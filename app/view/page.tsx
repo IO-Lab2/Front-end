@@ -179,10 +179,43 @@ export default function ViewPage() {
                 <p className={`text-3xl font-[600]`}>Znaleziono 0 wyników wyszukiwania</p>
                 <SearchOptions/>
             </div>
-            <ScientistCell/>
-            <ScientistCell/>
-            <ScientistCell/>
-            <ScientistCell/>
+
+            <ScientistCell
+                title={`dr. hab.`}
+                name={`Jan Kowalski`}
+                researchArea={`Profesor Uczelni`}
+                cathedra={`Katedra Zastosowań Matematyki`}
+                institute={`Instytut Informatyki Technicznej`}
+            />
+            <ScientistCell
+                title={`dr. hab.`}
+                name={`Jan Kowalski`}
+                researchArea={`Profesor Uczelni`}
+                cathedra={`Katedra Zastosowań Matematyki`}
+                institute={`Instytut Informatyki Technicznej`}
+            />
+            <ScientistCell
+                title={`dr. hab.`}
+                name={`Jan Kowalski`}
+                researchArea={`Profesor Uczelni`}
+                cathedra={`Katedra Zastosowań Matematyki`}
+                institute={`Instytut Informatyki Technicznej`}
+            />
+            <ScientistCell
+                title={`dr. hab.`}
+                name={`Jan Kowalski`}
+                researchArea={`Profesor Uczelni`}
+                cathedra={`Katedra Zastosowań Matematyki`}
+                institute={`Instytut Informatyki Technicznej`}
+            />
+            <ScientistCell
+                title={`dr. hab.`}
+                name={`Jan Kowalski`}
+                researchArea={`Profesor Uczelni`}
+                cathedra={`Katedra Zastosowań Matematyki`}
+                institute={`Instytut Informatyki Technicznej`}
+            />
+
         </div>
     </div>
 }
