@@ -15,6 +15,12 @@ export class FilterState {
         this.universities = unpackCookie(cookies[FilterState.COOKIE_UNIVERSITIES])
         this.institutes = unpackCookie(cookies[FilterState.COOKIE_INSTITUTES])
         this.cathedras = unpackCookie(cookies[FilterState.COOKIE_CATHEDRAS])
+
+        // NaN values get converted to `undefined`
+        this.ministerialPoints.min = Number(cookies[FilterState.COOKIE_MINISTERIAL_POINTS_MIN]) || undefined
+        this.ministerialPoints.max = Number(cookies[FilterState.COOKIE_MINISTERIAL_POINTS_MAX]) || undefined
+        this.publicationCount.min = Number(cookies[FilterState.COOKIE_PUBLICATION_COUNT_MIN]) || undefined
+        this.publicationCount.max = Number(cookies[FilterState.COOKIE_PUBLICATION_COUNT_MAX]) || undefined
     }
 
     getCookies(): Map<string, string> {
@@ -24,6 +30,19 @@ export class FilterState {
         result.set(FilterState.COOKIE_INSTITUTES, packCookieSet(this.institutes))
         result.set(FilterState.COOKIE_CATHEDRAS, packCookieSet(this.cathedras))
 
+        if (this.ministerialPoints.min) {
+            result.set(FilterState.COOKIE_MINISTERIAL_POINTS_MIN, this.ministerialPoints.min.toString())
+        }
+        if (this.ministerialPoints.max) {
+            result.set(FilterState.COOKIE_MINISTERIAL_POINTS_MAX, this.ministerialPoints.max.toString())
+        }
+        if (this.publicationCount.min) {
+            result.set(FilterState.COOKIE_PUBLICATION_COUNT_MIN, this.publicationCount.min.toString())
+        }
+        if (this.publicationCount.max) {
+            result.set(FilterState.COOKIE_PUBLICATION_COUNT_MAX, this.publicationCount.max.toString())
+        }
+
         return result
     }
 
@@ -32,8 +51,8 @@ export class FilterState {
     static readonly COOKIE_CATHEDRAS: string = "cathedras"
     static readonly COOKIE_MINISTERIAL_POINTS_MIN: string = "ministerialPointsMin"
     static readonly COOKIE_MINISTERIAL_POINTS_MAX: string = "ministerialPointsMax"
-    static readonly COOKIE_PUBLICATION_COUNT_MIN: string = "publicationCount"
-    static readonly COOKIE_PUBLICATION_COUNT: string = "publicationCount"
+    static readonly COOKIE_PUBLICATION_COUNT_MIN: string = "publicationCountMin"
+    static readonly COOKIE_PUBLICATION_COUNT_MAX: string = "publicationCountMax"
 }
 
 export class FilterGroup {
