@@ -30,16 +30,16 @@ export class FilterState {
         result.set(FilterState.COOKIE_INSTITUTES, packCookieSet(this.institutes))
         result.set(FilterState.COOKIE_CATHEDRAS, packCookieSet(this.cathedras))
 
-        if (this.ministerialPoints.min) {
+        if (this.ministerialPoints.min !== undefined) {
             result.set(FilterState.COOKIE_MINISTERIAL_POINTS_MIN, this.ministerialPoints.min.toString())
         }
-        if (this.ministerialPoints.max) {
+        if (this.ministerialPoints.max !== undefined) {
             result.set(FilterState.COOKIE_MINISTERIAL_POINTS_MAX, this.ministerialPoints.max.toString())
         }
-        if (this.publicationCount.min) {
+        if (this.publicationCount.min !== undefined) {
             result.set(FilterState.COOKIE_PUBLICATION_COUNT_MIN, this.publicationCount.min.toString())
         }
-        if (this.publicationCount.max) {
+        if (this.publicationCount.max !== undefined) {
             result.set(FilterState.COOKIE_PUBLICATION_COUNT_MAX, this.publicationCount.max.toString())
         }
 

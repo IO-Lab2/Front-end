@@ -5,8 +5,8 @@ import {ScientistCell} from "@/components/ScientistCell";
 import {
     fetchGetOrganizationsFilter,
     fetchMinisterialScoresRange,
-    fetchPublicationCountRange,
-    OrganizationBody
+    fetchPublicationCountRange, fetchSearch,
+    OrganizationBody, Scientist
 } from "@/lib/API";
 import {useEffect, useMemo, useReducer, useState} from "react";
 import {SearchOptions} from "@/components/SearchOptions";
@@ -25,6 +25,8 @@ export default function ViewPage() {
     const [minMinisterialPoints, setMinMinisterialPoints] = useState<number | null>(null)
     const [maxMinisterialPoints, setMaxMinisterialPoints] = useState<number | null>(null)
 
+    const [scientists, setScientists] = useState<Scientist[] | null>(null)
+
     const filters = useMemo(() => {
         const state = new FilterState()
         // read filters from cookies on first load
@@ -33,11 +35,13 @@ export default function ViewPage() {
     }, [])
 
     // this runs on every component update
-    // i hate that, but it works
+    // maybe optimize if the lag becomes unbearable... or unbearable even for web-standards, that is?
     const [, forceRender] = useReducer(x => {
         // sync filters in the `filter` variable with browser cookies
         filters.getCookies().forEach((value, key) => {
-            setCookie(key, value)
+            setCookie(key, value, {
+                sameSite: "lax"
+            })
         })
         return x + 1
     }, 0)
@@ -74,6 +78,16 @@ export default function ViewPage() {
             setUniversities(fetchedUniversities)
             setCathedras(fetchedCathedras)
             setInstitutes(fetchedInstitutes)
+
+            const scientists = await fetchSearch({
+                ministerialScoreMax: ministerialPointRange.largest,
+                ministerialScoreMin: ministerialPointRange.smallest,
+                publicationsMax: publicationCountRange.largest,
+                publicationsMin: publicationCountRange.smallest,
+            })
+
+            setScientists(scientists)
+            console.log(scientists)
         })()
     }, [])
 
@@ -159,12 +173,24 @@ export default function ViewPage() {
                 <FilterRange
                     min={minPublicationCount ?? 0}
                     max={maxPublicationCount ?? 0}
+                    onChange={(min, max) => {
+                        filters.publicationCount.min = min || undefined
+                        filters.publicationCount.max = max || undefined
+
+                        forceRender()
+                    }}
                 />
             </FilterViewOption>
             <FilterViewOption header="Ilość Punktów Ministerialnych">
                 <FilterRange
                     min={minMinisterialPoints ?? 0}
                     max={maxMinisterialPoints ?? 0}
+                    onChange={(min, max) => {
+                        filters.ministerialPoints.min = min || undefined
+                        filters.ministerialPoints.max = max || undefined
+
+                        forceRender()
+                    }}
                 />
             </FilterViewOption>
             <FilterViewOption header="Współczynnik IF"/>
@@ -176,46 +202,34 @@ export default function ViewPage() {
         </div>
         <div className={`flex-1`}>
             <div className={`pl-8 pr-8 p-6 w-full content-center flex flex-col gap-4`}>
-                <p className={`text-3xl font-[600]`}>Znaleziono 0 wyników wyszukiwania</p>
-                <SearchOptions/>
+                <p className={`text-3xl font-[600]`}>Znaleziono {scientists?.length ?? "..."} wyników wyszukiwania</p>
+                <SearchOptions
+                    onRefresh={async () => {
+                        setScientists([])
+                        const result = await fetchSearch({
+                            ministerialScoreMax: filters.ministerialPoints.max ?? undefined,
+                            ministerialScoreMin: filters.ministerialPoints.min ?? undefined,
+                            publicationsMin: filters.ministerialPoints.min ?? undefined,
+                            publicationsMax: filters.ministerialPoints.max ?? undefined
+                        })
+                        if(result) {
+                            setScientists(result)
+                        }
+                    }}
+                />
             </div>
-
-            <ScientistCell
-                title={`dr. hab.`}
-                name={`Jan Kowalski`}
-                researchArea={`Profesor Uczelni`}
-                cathedra={`Katedra Zastosowań Matematyki`}
-                institute={`Instytut Informatyki Technicznej`}
-            />
-            <ScientistCell
-                title={`dr. hab.`}
-                name={`Jan Kowalski`}
-                researchArea={`Profesor Uczelni`}
-                cathedra={`Katedra Zastosowań Matematyki`}
-                institute={`Instytut Informatyki Technicznej`}
-            />
-            <ScientistCell
-                title={`dr. hab.`}
-                name={`Jan Kowalski`}
-                researchArea={`Profesor Uczelni`}
-                cathedra={`Katedra Zastosowań Matematyki`}
-                institute={`Instytut Informatyki Technicznej`}
-            />
-            <ScientistCell
-                title={`dr. hab.`}
-                name={`Jan Kowalski`}
-                researchArea={`Profesor Uczelni`}
-                cathedra={`Katedra Zastosowań Matematyki`}
-                institute={`Instytut Informatyki Technicznej`}
-            />
-            <ScientistCell
-                title={`dr. hab.`}
-                name={`Jan Kowalski`}
-                researchArea={`Profesor Uczelni`}
-                cathedra={`Katedra Zastosowań Matematyki`}
-                institute={`Instytut Informatyki Technicznej`}
-            />
-
+            {
+                scientists?.map((scientist) => {
+                    return <ScientistCell
+                        key={scientist.id}
+                        title={scientist.academic_title}
+                        name={`${scientist.first_name} ${scientist.last_name}`}
+                        researchArea={scientist.research_areas?.map(area => area.name).join(", ") ?? ""}
+                        institute={"NYI (Institute)"}
+                        cathedra={"NYI (Cathedra)"}
+                    />
+                })
+            }
         </div>
     </div>
 }
