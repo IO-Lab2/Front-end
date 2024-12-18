@@ -108,7 +108,9 @@ export async function fetchSearch(query: SearchBody): Promise<Scientist[]> {
     }
     if(query.organizations !== undefined) {
         for(const organization of query.organizations) {
-            queryParams.append("organizations[]", organization)
+            if(organization != "") {
+                queryParams.append("organizations[]", organization)
+            }
         }
     }
     if(query.publicationsMax !== undefined) {
@@ -119,7 +121,9 @@ export async function fetchSearch(query: SearchBody): Promise<Scientist[]> {
     }
     if(query.researchAreas !== undefined) {
         for(const area of query.researchAreas) {
-            queryParams.append("research_areas[]", area)
+            if(area != "") {
+                queryParams.append("research_areas[]", area)
+            }
         }
     }
     if(query.surname !== undefined) {
@@ -127,10 +131,16 @@ export async function fetchSearch(query: SearchBody): Promise<Scientist[]> {
     }
 
     try {
-        return await fetch("https://api.epickaporownywarkabazwiedzyuczelni.rocks/api/search?" + queryParams, {
+        const result = await fetch("https://api.epickaporownywarkabazwiedzyuczelni.rocks/api/search?" + queryParams, {
             method: "GET",
             cache: "force-cache",
         }).then(res => res.json())
+
+        if(Array.isArray(result)) {
+            return result
+        } else {
+            return []
+        }
     } catch(ex) {
         console.error(`Wyszukiwanie nie powiodło się: ${ex}`)
         return []

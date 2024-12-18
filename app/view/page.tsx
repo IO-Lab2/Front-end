@@ -80,6 +80,7 @@ export default function ViewPage() {
             setInstitutes(fetchedInstitutes)
 
             const scientists = await fetchSearch({
+                organizations: (institutes ?? []).concat((cathedras ?? []), (universities ?? [])).map(org => org.name),
                 ministerialScoreMax: ministerialPointRange.largest,
                 ministerialScoreMin: ministerialPointRange.smallest,
                 publicationsMax: publicationCountRange.largest,
@@ -87,9 +88,12 @@ export default function ViewPage() {
             })
 
             setScientists(scientists)
-            console.log(scientists)
         })()
-    }, [])
+    },
+        // this would make it loop endlessly
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        []
+    )
 
     return <div className={`w-full h-full flex`}>
         <div className={`h-full max-h-full w-[30rem] flex-shrink-0 flex flex-col`}>
@@ -102,14 +106,14 @@ export default function ViewPage() {
                             key={uni.id}
                             label={uni.name}
                             count={0}
-                            isChecked={filters.universities.has(uni.id)}
+                            isChecked={filters.universities.has(uni.name)}
                             onChoice={(isChecked: boolean) => {
                                 if (isChecked) {
-                                    filters.universities.add(uni.id)
-                                    console.log(`Added university filter: ${uni.id}`)
+                                    filters.universities.add(uni.name)
+                                    console.log(`Added university filter: ${uni.name}`)
                                 } else {
-                                    filters.universities.delete(uni.id)
-                                    console.log(`Removed university filter: ${uni.id}`)
+                                    filters.universities.delete(uni.name)
+                                    console.log(`Removed university filter: ${uni.name}`)
                                 }
 
                                 forceRender()
@@ -127,14 +131,14 @@ export default function ViewPage() {
                             key={institute.id}
                             label={institute.name}
                             count={0}
-                            isChecked={filters.institutes.has(institute.id)}
+                            isChecked={filters.institutes.has(institute.name)}
                             onChoice={(isChecked: boolean) => {
                                 if (isChecked) {
-                                    filters.institutes.add(institute.id)
-                                    console.log(`Added institute filter: ${institute.id}`)
+                                    filters.institutes.add(institute.name)
+                                    console.log(`Added institute filter: ${institute.name}`)
                                 } else {
-                                    filters.institutes.delete(institute.id)
-                                    console.log(`Removed institute filter: ${institute.id}`)
+                                    filters.institutes.delete(institute.name)
+                                    console.log(`Removed institute filter: ${institute.name}`)
                                 }
 
                                 forceRender()
@@ -152,14 +156,14 @@ export default function ViewPage() {
                             key={index}
                             label={cathedra.name}
                             count={0}
-                            isChecked={filters.cathedras.has(cathedra.id)}
+                            isChecked={filters.cathedras.has(cathedra.name)}
                             onChoice={(isChecked: boolean) => {
                                 if (isChecked) {
-                                    filters.cathedras.add(cathedra.id)
-                                    console.log(`Added cathedra filter: ${cathedra.id}`)
+                                    filters.cathedras.add(cathedra.name)
+                                    console.log(`Added cathedra filter: ${cathedra.name}`)
                                 } else {
-                                    filters.cathedras.delete(cathedra.id)
-                                    console.log(`Removed cathedra filter: ${cathedra.id}`)
+                                    filters.cathedras.delete(cathedra.name)
+                                    console.log(`Removed cathedra filter: ${cathedra.name}`)
                                 }
 
                                 forceRender()
@@ -207,10 +211,14 @@ export default function ViewPage() {
                     onRefresh={async () => {
                         setScientists([])
                         const result = await fetchSearch({
+                            organizations: filters.institutes.values().toArray().concat(
+                                filters.universities.values().toArray(),
+                                filters.cathedras.values().toArray()
+                            ),
                             ministerialScoreMax: filters.ministerialPoints.max ?? undefined,
                             ministerialScoreMin: filters.ministerialPoints.min ?? undefined,
-                            publicationsMin: filters.ministerialPoints.min ?? undefined,
-                            publicationsMax: filters.ministerialPoints.max ?? undefined
+                            publicationsMin: filters.publicationCount.min ?? undefined,
+                            publicationsMax: filters.publicationCount.max ?? undefined
                         })
                         if(result) {
                             setScientists(result)
@@ -219,7 +227,7 @@ export default function ViewPage() {
                 />
             </div>
             {
-                scientists?.map((scientist) => {
+                (scientists ?? []).map((scientist) => {
                     return <ScientistCell
                         key={scientist.id}
                         title={scientist.academic_title}
