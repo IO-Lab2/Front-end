@@ -10,20 +10,26 @@ export interface FilterViewOptionProps {
 export interface FilterCheckboxProps {
     label: string
     count: number
-    isChecked?: boolean
+    isChecked?: () => boolean
     onChoice?: (isChecked: boolean) => void
 }
 
 export function FilterCheckbox(props: FilterCheckboxProps) {
     const onChoice = props.onChoice
+    const [selection, setSelection] = useState(props.isChecked ? props.isChecked() : false)
 
     return <div className={`m-1`}>
         <input
             className={`m-1 size-5 align-middle`}
             type="checkbox"
-            checked={props.isChecked}
+            checked={selection}
             onChange={
-                onChoice ? (value) => { onChoice(value.target.checked) } : undefined
+                (value) => {
+                    if(onChoice) {
+                        onChoice(value.target.checked)
+                    }
+                    setSelection(value.target.checked)
+                }
             }/>
         <span className={`p-2 font-[600] align-middle`}>{props.label}</span>
         <span className={`align-middle`}>({props.count})</span>

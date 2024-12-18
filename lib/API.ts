@@ -133,7 +133,6 @@ export async function fetchSearch(query: SearchBody): Promise<Scientist[]> {
     try {
         const result = await fetch("https://api.epickaporownywarkabazwiedzyuczelni.rocks/api/search?" + queryParams, {
             method: "GET",
-            cache: "force-cache",
         }).then(res => res.json())
 
         if(Array.isArray(result)) {

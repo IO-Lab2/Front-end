@@ -23,10 +23,10 @@ export function FilterRange(props: FilterRangeProps) {
                 defaultValue={props.min}
                 onChange={
                     (value) => {
-                        const newMin = Number(value.target.value) || props.min
+                        const newMin = Number(value.target.value)
                         setMin(newMin)
                         if(onChange) { onChange(newMin, max) }
-                        value.target.value = newMin.toString()
+                        value.target.value = (newMin || "0").toString()
                     }
                 }
                 min={0}
@@ -43,7 +43,7 @@ export function FilterRange(props: FilterRangeProps) {
                         const newMax = Number(value.target.value) || props.max
                         setMax(newMax)
                         if(onChange) { onChange(min, newMax) }
-                        value.target.value = newMax.toString()
+                        value.target.value = (newMax || "0").toString()
                     }
                 }
                 min={0}

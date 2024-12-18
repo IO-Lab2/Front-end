@@ -8,43 +8,35 @@ import {
     fetchPublicationCountRange, fetchSearch,
     OrganizationBody, Scientist
 } from "@/lib/API";
-import {useEffect, useMemo, useReducer, useState} from "react";
+import {useEffect, useMemo, useState} from "react";
 import {SearchOptions} from "@/components/SearchOptions";
 import {FilterState} from "@/lib/FilterState";
-import {getCookies, setCookie} from "cookies-next/client";
+import {getCookies} from "cookies-next/client";
 import {FilterRange} from "@/components/FilterViewRange";
 
+class OrganizationData {
+    constructor() { }
+
+    universities: OrganizationBody[] = []
+    cathedras: OrganizationBody[] = []
+    institutes: OrganizationBody[] = []
+
+    publicationCount: { min?: number, max?: number } = {}
+    ministerialPoints: { min?: number, max?: number } = {}
+}
+
 export default function ViewPage() {
-    const [universities, setUniversities] = useState<OrganizationBody[] | null>(null)
-    const [cathedras, setCathedras] = useState<OrganizationBody[] | null>(null)
-    const [institutes, setInstitutes] = useState<OrganizationBody[] | null>(null)
-
-    const [minPublicationCount, setMinPublicationCount] = useState<number | null>(null)
-    const [maxPublicationCount, setMaxPublicationCount] = useState<number | null>(null)
-
-    const [minMinisterialPoints, setMinMinisterialPoints] = useState<number | null>(null)
-    const [maxMinisterialPoints, setMaxMinisterialPoints] = useState<number | null>(null)
-
+    const [orgData, setOrgData] = useState<OrganizationData | null>(null);
     const [scientists, setScientists] = useState<Scientist[] | null>(null)
 
     const filters = useMemo(() => {
         const state = new FilterState()
         // read filters from cookies on first load
         state.readFromCookies(getCookies() ?? {})
+        console.log("Reading filters from cookies...")
+        console.log(state)
         return state
     }, [])
-
-    // this runs on every component update
-    // maybe optimize if the lag becomes unbearable... or unbearable even for web-standards, that is?
-    const [, forceRender] = useReducer(x => {
-        // sync filters in the `filter` variable with browser cookies
-        filters.getCookies().forEach((value, key) => {
-            setCookie(key, value, {
-                sameSite: "lax"
-            })
-        })
-        return x + 1
-    }, 0)
 
     useEffect(() => {
         (async function () {
@@ -71,44 +63,46 @@ export default function ViewPage() {
             const publicationCountRange = await fetchPublicationCountRange()
             const ministerialPointRange = await fetchMinisterialScoresRange()
 
-            setMaxPublicationCount(publicationCountRange.largest)
-            setMinPublicationCount(publicationCountRange.smallest)
-            setMaxMinisterialPoints(ministerialPointRange.largest)
-            setMinMinisterialPoints(ministerialPointRange.smallest)
-            setUniversities(fetchedUniversities)
-            setCathedras(fetchedCathedras)
-            setInstitutes(fetchedInstitutes)
-
             const scientists = await fetchSearch({
-                organizations: (institutes ?? []).concat((cathedras ?? []), (universities ?? [])).map(org => org.name),
+                organizations: filters.getAllOrganizationNames(),
                 ministerialScoreMax: ministerialPointRange.largest,
                 ministerialScoreMin: ministerialPointRange.smallest,
                 publicationsMax: publicationCountRange.largest,
                 publicationsMin: publicationCountRange.smallest,
             })
 
+            const fetchedOrgData = new OrganizationData()
+            fetchedOrgData.universities = fetchedUniversities
+            fetchedOrgData.cathedras = fetchedCathedras
+            fetchedOrgData.institutes = fetchedInstitutes
+            fetchedOrgData.ministerialPoints.max = ministerialPointRange.largest
+            fetchedOrgData.ministerialPoints.min = ministerialPointRange.smallest
+            fetchedOrgData.publicationCount.max = publicationCountRange.largest
+            fetchedOrgData.publicationCount.min = publicationCountRange.smallest
+
+            setOrgData(fetchedOrgData)
             setScientists(scientists)
         })()
-    },
-        // this would make it loop endlessly
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        []
-    )
+    }, [filters])
 
     return <div className={`w-full h-full flex`}>
         <div className={`h-full max-h-full w-[30rem] flex-shrink-0 flex flex-col`}>
             <FilterViewOption header="Uczelnia">
                 {
-                    universities?.sort((left, right) => {
+                    orgData?.universities.sort((left, right) => {
                         return left.name.localeCompare(right.name)
                     }).map((uni) => {
                         return <FilterCheckbox
                             key={uni.id}
                             label={uni.name}
                             count={0}
-                            isChecked={filters.universities.has(uni.name)}
-                            onChoice={(isChecked: boolean) => {
-                                if (isChecked) {
+                            isChecked={function() {
+                                console.log(uni.name)
+                                console.log(filters.universities)
+                                return filters.universities.has(uni.name)
+                            }}
+                            onChoice={() => {
+                                if(!filters.universities.has(uni.name)) {
                                     filters.universities.add(uni.name)
                                     console.log(`Added university filter: ${uni.name}`)
                                 } else {
@@ -116,7 +110,7 @@ export default function ViewPage() {
                                     console.log(`Removed university filter: ${uni.name}`)
                                 }
 
-                                forceRender()
+                                filters.syncUniversityCookie()
                             }}
                         />
                     }) ?? []
@@ -124,14 +118,14 @@ export default function ViewPage() {
             </FilterViewOption>
             <FilterViewOption header="Instytut">
                 {
-                    institutes?.sort((left, right) => {
+                    orgData?.institutes.sort((left, right) => {
                         return left.name.localeCompare(right.name)
                     }).map((institute) => {
                         return <FilterCheckbox
                             key={institute.id}
                             label={institute.name}
                             count={0}
-                            isChecked={filters.institutes.has(institute.name)}
+                            isChecked={() => filters.institutes.has(decodeURI(institute.name))}
                             onChoice={(isChecked: boolean) => {
                                 if (isChecked) {
                                     filters.institutes.add(institute.name)
@@ -141,7 +135,7 @@ export default function ViewPage() {
                                     console.log(`Removed institute filter: ${institute.name}`)
                                 }
 
-                                forceRender()
+                                filters.syncInstituteCookie()
                             }}
                         />
                     }) ?? []
@@ -149,14 +143,14 @@ export default function ViewPage() {
             </FilterViewOption>
             <FilterViewOption header="Katedra">
                 {
-                    cathedras?.sort((left, right) => {
+                    orgData?.cathedras.sort((left, right) => {
                         return left.name.localeCompare(right.name)
                     }).map((cathedra, index) => {
                         return <FilterCheckbox
                             key={index}
                             label={cathedra.name}
                             count={0}
-                            isChecked={filters.cathedras.has(cathedra.name)}
+                            isChecked={() => filters.cathedras.has(decodeURI(cathedra.name))}
                             onChoice={(isChecked: boolean) => {
                                 if (isChecked) {
                                     filters.cathedras.add(cathedra.name)
@@ -166,7 +160,7 @@ export default function ViewPage() {
                                     console.log(`Removed cathedra filter: ${cathedra.name}`)
                                 }
 
-                                forceRender()
+                                filters.syncCathedraCookie()
                             }}
                         />
                     }) ?? []
@@ -175,25 +169,25 @@ export default function ViewPage() {
             <FilterViewOption header="Stanowisko"/>
             <FilterViewOption header="Ilość Publikacji">
                 <FilterRange
-                    min={minPublicationCount ?? 0}
-                    max={maxPublicationCount ?? 0}
+                    min={filters.publicationCount.min ?? 0}
+                    max={filters.publicationCount.max ?? 0}
                     onChange={(min, max) => {
                         filters.publicationCount.min = min || undefined
                         filters.publicationCount.max = max || undefined
 
-                        forceRender()
+                        filters.syncPublicationCountCookie()
                     }}
                 />
             </FilterViewOption>
             <FilterViewOption header="Ilość Punktów Ministerialnych">
                 <FilterRange
-                    min={minMinisterialPoints ?? 0}
-                    max={maxMinisterialPoints ?? 0}
+                    min={filters.ministerialPoints.min ?? 0}
+                    max={filters.ministerialPoints.max ?? 0}
                     onChange={(min, max) => {
                         filters.ministerialPoints.min = min || undefined
                         filters.ministerialPoints.max = max || undefined
 
-                        forceRender()
+                        filters.syncMinisterialPointsCookie()
                     }}
                 />
             </FilterViewOption>
@@ -211,32 +205,31 @@ export default function ViewPage() {
                     onRefresh={async () => {
                         setScientists([])
                         const result = await fetchSearch({
-                            organizations: filters.institutes.values().toArray().concat(
-                                filters.universities.values().toArray(),
-                                filters.cathedras.values().toArray()
-                            ),
+                            organizations: filters.getAllOrganizationNames(),
                             ministerialScoreMax: filters.ministerialPoints.max ?? undefined,
                             ministerialScoreMin: filters.ministerialPoints.min ?? undefined,
                             publicationsMin: filters.publicationCount.min ?? undefined,
                             publicationsMax: filters.publicationCount.max ?? undefined
                         })
-                        if(result) {
-                            setScientists(result)
-                        }
+
+                        if(result) { setScientists(result) }
                     }}
                 />
             </div>
             {
-                (scientists ?? []).map((scientist) => {
-                    return <ScientistCell
-                        key={scientist.id}
-                        title={scientist.academic_title}
-                        name={`${scientist.first_name} ${scientist.last_name}`}
-                        researchArea={scientist.research_areas?.map(area => area.name).join(", ") ?? ""}
-                        institute={"NYI (Institute)"}
-                        cathedra={"NYI (Cathedra)"}
-                    />
-                })
+                (scientists ?? [])
+                    .slice(0, 50) // Póki co limit 50 naukowców na stronę, aby nie wysadziło jej od ilości danych
+                    .map((scientist) => {
+                        return <ScientistCell
+                            key={scientist.id}
+                            title={scientist.academic_title}
+                            name={`${scientist.first_name} ${scientist.last_name}`}
+                            researchArea={scientist.research_areas?.map(area => area.name).join(", ") ?? ""}
+                            institute={"NYI (Institute)"}
+                            cathedra={"NYI (Cathedra)"}
+                        />
+                    }
+                )
             }
         </div>
     </div>

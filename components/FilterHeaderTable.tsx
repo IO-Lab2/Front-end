@@ -8,7 +8,7 @@ import {UUID} from "node:crypto";
 export interface FilterTableProps {
     header?: string,
     parentOrg?: UUID,
-    onChoice?: (orgId: UUID) => void
+    onChoice?: (org: OrganizationBody) => void
 }
 
 export default function FilterHeaderTable(props: FilterTableProps) {
@@ -36,7 +36,7 @@ export default function FilterHeaderTable(props: FilterTableProps) {
                         return <OrganizationCell
                             key={org.id}
                             org={org}
-                            onClick={onChoiceCallback ? () => onChoiceCallback(org.id) : undefined}
+                            onClick={onChoiceCallback ? () => onChoiceCallback(org) : undefined}
                         />
                     })
                 }
