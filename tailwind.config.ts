@@ -10,6 +10,7 @@ export default {
     extend: {
       colors: {
         basetext: 'var(--color-base-text)',
+        bluetext: 'var(--color-blue-text)',
         primary: 'var(--color-primary)',
         secondary: 'var(--color-secondary)',
       },

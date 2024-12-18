@@ -5,8 +5,11 @@
 import FilterHeaderTable from "@/components/FilterHeaderTable";
 import SkipFilterButton from "@/components/SkipFilterButton";
 import {JSX, useState} from "react";
-import {UUID} from "node:crypto";
 import {useRouter} from "next/navigation";
+import {setCookie} from "cookies-next/client";
+import {FilterState} from "@/lib/FilterState";
+import {UUID} from "node:crypto";
+import {OrganizationBody} from "@/lib/API";
 
 export default function Home() {
     const router = useRouter()
@@ -31,9 +34,12 @@ export default function Home() {
             </div>
             <FilterHeaderTable
                 header={`Na początku wybierz uczelnię:`}
-                onChoice={(id: UUID) => {
-                    console.log(`Wybrano uniwersytet: ${id}`)
-                    setUniversityChoice(id)
+                onChoice={(org: OrganizationBody) => {
+                    console.log(`Wybrano uniwersytet: ${org.name}`)
+                    setCookie(FilterState.COOKIE_UNIVERSITIES, JSON.stringify([org.name]), {
+                        sameSite: "strict"
+                    })
+                    setUniversityChoice(org.id)
                 }}
             />
         </>
@@ -42,8 +48,11 @@ export default function Home() {
             <FilterHeaderTable
                 header={`Wybierz Instytut:`}
                 parentOrg={universityChoice ?? undefined}
-                onChoice={(id: UUID) => {
-                    console.log(`Wybrano instytut: ${id}`)
+                onChoice={(org: OrganizationBody) => {
+                    console.log(`Wybrano instytut: ${org.name}`)
+                    setCookie(FilterState.COOKIE_INSTITUTES, JSON.stringify([org.name]), {
+                        sameSite: "strict"
+                    })
                     router.push("/view")
                 }}
             />

@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     title: "Akademicka Baza Wiedzy"
 };
 
-export default function RootLayout({ children }: Readonly<{
+export default async function RootLayout({ children }: Readonly<{
     children: ReactNode;
 }>) {
     return (
