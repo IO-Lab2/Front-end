@@ -3,6 +3,9 @@ import {Playfair} from "next/font/google";
 import {ReactNode} from "react";
 
 import "./globals.css";
+import "@/lib/i18next.ts";
+import i18next from "i18next";
+import { useTranslation, Trans } from "react-i18next";
 
 const playfair = Playfair({
     subsets: ["latin", "latin-ext"],
@@ -17,6 +20,8 @@ export const metadata: Metadata = {
 export default async function RootLayout({ children }: Readonly<{
     children: ReactNode;
 }>) {
+    
+    const { t, i18n} = useTranslation();
     return (
         <html lang="pl" className={`${playfair.variable} antialiased`}>
             <body className={`w-screen h-screen bg-gradient-to-tr from-primary to-secondary bg-fixed flex flex-col`}>

@@ -11,29 +11,36 @@ import {FilterState} from "@/lib/FilterState";
 import {UUID} from "node:crypto";
 import {OrganizationBody} from "@/lib/API";
 
+import "@/lib/i18next.ts";
+import i18next from "i18next";
+import { useTranslation, Trans } from "react-i18next";
+
 export default function Home() {
     const router = useRouter()
     const [universityChoice, setUniversityChoice] = useState<UUID | null>(null);
 
     let pageContents: JSX.Element
-
+    const {t,i18n} = useTranslation();
     if (universityChoice == null) {
         pageContents = <>
             <div className={`mb-5`}>
+                <select>
+                    <option onSelect={() => i18n.changeLanguage('pl')} selected>Polski</option>
+                    <option onSelect={() => i18n.changeLanguage('en')}>English</option>
+                </select>
                 <div>
                     <h1 className={`font-playfair font-extrabold text-black text-center text-8xl`}>
-                        Akademicka Baza Wiedzy
+                        {t('title')}
                     </h1>
                 </div>
                 <div>
                     <h4 className={`font-playfair font-extrabold text-black text-center text-2xl`}>
-                        Twoje centrum wiedzy akademickiej - znajdź publikacje, profesorów i badania w jednym
-                        miejscu!
+                        {t('subtitle')}
                     </h4>
                 </div>
             </div>
             <FilterHeaderTable
-                header={`Na początku wybierz uczelnię:`}
+                header={t('choose1')}
                 onChoice={(org: OrganizationBody) => {
                     console.log(`Wybrano uniwersytet: ${org.name}`)
                     setCookie(FilterState.COOKIE_UNIVERSITIES, JSON.stringify([org.name]), {
@@ -46,7 +53,7 @@ export default function Home() {
     } else {
         pageContents = <>
             <FilterHeaderTable
-                header={`Wybierz Instytut:`}
+                header={t('choose2')}
                 parentOrg={universityChoice ?? undefined}
                 onChoice={(org: OrganizationBody) => {
                     console.log(`Wybrano instytut: ${org.name}`)
