@@ -37,6 +37,11 @@ export interface SearchBody {
     surname?: string
 }
 
+export interface SearchResponse {
+    count?: number,
+    scientists?: Scientist[]
+}
+
 export async function fetchGetOrganizationsTree(id: UUID | null): Promise<GetOrganizationsFilterResponse | null> {
     try {
         const queryParams = new URLSearchParams()
@@ -88,7 +93,7 @@ export async function fetchMinisterialScoresRange(): Promise<{ largest: number, 
 }
 
 // doesn't work yet
-export async function fetchSearch(query: SearchBody): Promise<Scientist[]> {
+export async function fetchSearch(query: SearchBody): Promise<SearchResponse> {
     const queryParams = new URLSearchParams()
 
     if(query.academicTitles !== undefined) {
@@ -131,17 +136,11 @@ export async function fetchSearch(query: SearchBody): Promise<Scientist[]> {
     }
 
     try {
-        const result = await fetch("https://api.epickaporownywarkabazwiedzyuczelni.rocks/api/search?" + queryParams, {
+        return await fetch("https://api.epickaporownywarkabazwiedzyuczelni.rocks/api/search?" + queryParams, {
             method: "GET",
         }).then(res => res.json())
-
-        if(Array.isArray(result)) {
-            return result
-        } else {
-            return []
-        }
     } catch(ex) {
         console.error(`Wyszukiwanie nie powiodło się: ${ex}`)
-        return []
+        return {}
     }
 }

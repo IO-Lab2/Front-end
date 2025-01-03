@@ -6,7 +6,7 @@ import {
     fetchGetOrganizationsFilter,
     fetchMinisterialScoresRange,
     fetchPublicationCountRange, fetchSearch,
-    OrganizationBody, Scientist
+    OrganizationBody, Scientist, SearchResponse
 } from "@/lib/API";
 import {useEffect, useMemo, useState} from "react";
 import {SearchOptions} from "@/components/SearchOptions";
@@ -63,7 +63,7 @@ export default function ViewPage() {
             const publicationCountRange = await fetchPublicationCountRange()
             const ministerialPointRange = await fetchMinisterialScoresRange()
 
-            const scientists = await fetchSearch({
+            const searchResponse: SearchResponse = await fetchSearch({
                 organizations: filters.getAllOrganizationNames(),
                 ministerialScoreMax: ministerialPointRange.largest,
                 ministerialScoreMin: ministerialPointRange.smallest,
@@ -81,7 +81,7 @@ export default function ViewPage() {
             fetchedOrgData.publicationCount.min = publicationCountRange.smallest
 
             setOrgData(fetchedOrgData)
-            setScientists(scientists)
+            setScientists(searchResponse.scientists ?? [])
         })()
     }, [filters])
 
@@ -204,7 +204,7 @@ export default function ViewPage() {
                 <SearchOptions
                     onRefresh={async () => {
                         setScientists([])
-                        const result = await fetchSearch({
+                        const result: SearchResponse = await fetchSearch({
                             organizations: filters.getAllOrganizationNames(),
                             ministerialScoreMax: filters.ministerialPoints.max ?? undefined,
                             ministerialScoreMin: filters.ministerialPoints.min ?? undefined,
@@ -212,7 +212,7 @@ export default function ViewPage() {
                             publicationsMax: filters.publicationCount.max ?? undefined
                         })
 
-                        if(result) { setScientists(result) }
+                        if(result) { setScientists(result.scientists ?? []) }
                     }}
                 />
             </div>
