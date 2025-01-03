@@ -9,7 +9,7 @@ import {useRouter} from "next/navigation";
 import {setCookie} from "cookies-next/client";
 import {FilterState} from "@/lib/FilterState";
 import {UUID} from "node:crypto";
-import {OrganizationBody} from "@/lib/API";
+import {Organization} from "@/lib/API";
 
 export default function Home() {
     const router = useRouter()
@@ -34,7 +34,7 @@ export default function Home() {
             </div>
             <FilterHeaderTable
                 header={`Na początku wybierz uczelnię:`}
-                onChoice={(org: OrganizationBody) => {
+                onChoice={(org: Organization) => {
                     console.log(`Wybrano uniwersytet: ${org.name}`)
                     setCookie(FilterState.COOKIE_UNIVERSITIES, JSON.stringify([org.name]), {
                         sameSite: "strict"
@@ -48,7 +48,7 @@ export default function Home() {
             <FilterHeaderTable
                 header={`Wybierz Instytut:`}
                 parentOrg={universityChoice ?? undefined}
-                onChoice={(org: OrganizationBody) => {
+                onChoice={(org: Organization) => {
                     console.log(`Wybrano instytut: ${org.name}`)
                     setCookie(FilterState.COOKIE_INSTITUTES, JSON.stringify([org.name]), {
                         sameSite: "strict"
