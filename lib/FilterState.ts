@@ -21,6 +21,9 @@ export class FilterState {
     publicationYears: Set<number> = new Set()
     publicationTypes: Set<string> = new Set()
 
+    name?: string
+    surname?: string
+
     resetFilters(): void {
         this.universities.clear()
         this.institutes.clear()
@@ -35,6 +38,8 @@ export class FilterState {
         this.publishers.clear()
         this.publicationYears.clear()
         this.publicationTypes.clear()
+        this.name = undefined
+        this.surname = undefined
 
         deleteCookie(FilterState.COOKIE_UNIVERSITIES, { sameSite: "strict" })
         deleteCookie(FilterState.COOKIE_INSTITUTES, { sameSite: "strict" })
@@ -49,6 +54,8 @@ export class FilterState {
         deleteCookie(FilterState.COOKIE_PUBLISHERS, { sameSite: "strict" })
         deleteCookie(FilterState.COOKIE_PUBLICATION_YEARS, { sameSite: "strict" })
         deleteCookie(FilterState.COOKIE_PUBLICATION_TYPE, { sameSite: "strict" })
+        deleteCookie(FilterState.COOKIE_NAME, { sameSite: "strict" })
+        deleteCookie(FilterState.COOKIE_SURNAME, { sameSite: "strict" })
     }
 
     getAllOrganizationNames(): string[] {
@@ -88,6 +95,30 @@ export class FilterState {
         setCookie(FilterState.COOKIE_POSITIONS, packCookieSet(this.positions), {
             sameSite: "strict"
         })
+    }
+
+    syncNameCookie() {
+        if(this.name) {
+            setCookie(FilterState.COOKIE_NAME, this.name, {
+                sameSite: "strict"
+            })
+        } else {
+            deleteCookie(FilterState.COOKIE_NAME, {
+                sameSite: "strict"
+            })
+        }
+    }
+
+    syncSurnameCookie() {
+        if(this.surname) {
+            setCookie(FilterState.COOKIE_SURNAME, this.surname, {
+                sameSite: "strict"
+            })
+        } else {
+            deleteCookie(FilterState.COOKIE_SURNAME, {
+                sameSite: "strict"
+            })
+        }
     }
 
     syncMinisterialPointsCookie() {
@@ -179,6 +210,8 @@ export class FilterState {
         this.publicationCount.max = Number(cookies[FilterState.COOKIE_PUBLICATION_COUNT_MAX]) || undefined
         this.ifScore.min = Number(cookies[FilterState.COOKIE_IF_SCORE_MIN]) || undefined
         this.ifScore.max = Number(cookies[FilterState.COOKIE_IF_SCORE_MAX]) || undefined
+        this.name = cookies[FilterState.COOKIE_NAME]
+        this.surname = cookies[FilterState.COOKIE_SURNAME]
     }
 
     static readonly COOKIE_UNIVERSITIES: string = "universities"
@@ -194,6 +227,8 @@ export class FilterState {
     static readonly COOKIE_PUBLICATION_COUNT_MAX: string = "publicationCountMax"
     static readonly COOKIE_PUBLICATION_YEARS: string = "publicationYears"
     static readonly COOKIE_PUBLICATION_TYPE: string = "publicationType"
+    static readonly COOKIE_NAME: string = "name"
+    static readonly COOKIE_SURNAME: string = "surname"
 }
 
 function unpackCookie<T>(cookie: string | undefined): Set<T> {

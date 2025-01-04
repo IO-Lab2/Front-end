@@ -13,6 +13,7 @@ import {SearchOptions} from "@/components/SearchOptions";
 import {FilterState} from "@/lib/FilterState";
 import {getCookies} from "cookies-next/client";
 import {FilterRange} from "@/components/FilterViewRange";
+import {FilterString} from "@/components/FilterViewString";
 
 class OrganizationData {
     constructor() {
@@ -30,6 +31,9 @@ class OrganizationData {
 
     publicationYears: number[] = []
     journalTypes: string[] = []
+
+    name?: string
+    surname?: string
 }
 
 export default function ViewPage() {
@@ -101,16 +105,13 @@ export default function ViewPage() {
             publicationYears.sort().reverse()
 
             const searchResponse: SearchResponse | null = await fetchSearch({
-                journalTypes: journalTypes,
                 organizations: filters.getAllOrganizationNames(),
                 limit: perPageLimit,
                 ministerialScoreMax: ministerialPointRange.largest,
                 ministerialScoreMin: ministerialPointRange.smallest,
                 publicationsMax: publicationCountRange.largest,
                 publicationsMin: publicationCountRange.smallest,
-                publicationYears: publicationYears,
-                publishers: publishers,
-                positions: positions
+                // TODO apply filters read from cookies on first load
             })
 
             const fetchedOrgData = new OrganizationData()
@@ -132,6 +133,33 @@ export default function ViewPage() {
         })()
     }, [filters])
 
+    const nameField = <>
+        <FilterString
+            label={`Imie`}
+            value={() => filters.name ?? ""}
+            onChanged={(value) => {
+                filters.name = value.length > 0 ? value : undefined
+
+                filters.syncNameCookie()
+                if(!hasFilters) {
+                    setHasFilters(true)
+                }
+            }}
+        />
+        <FilterString
+            label={`Nazwisko`}
+            value={() => filters.surname ?? ""}
+            onChanged={(value) => {
+                filters.surname = value.length > 0 ? value : undefined
+
+                filters.syncSurnameCookie()
+                if(!hasFilters) {
+                    setHasFilters(true)
+                }
+            }}
+        />
+    </>
+
     const universityCheckboxes = orgData?.universities.map((uni) => {
         return <FilterCheckbox
             key={uni.id}
@@ -149,6 +177,7 @@ export default function ViewPage() {
 
                 filters.syncUniversityCookie()
                 if (!hasFilters) {
+                    setHasFilters(true)
                 }
             }}
         />
@@ -335,6 +364,7 @@ export default function ViewPage() {
 
     return <div className={`w-full h-full flex`}>
         <div className={`h-full max-h-full w-[30rem] flex-shrink-0 flex flex-col`}>
+            <FilterViewOption header="Naukowiec">{nameField}</FilterViewOption>
             <FilterViewOption header="Uczelnia">{universityCheckboxes}</FilterViewOption>
             <FilterViewOption header="Instytut">{instituteCheckboxes}</FilterViewOption>
             <FilterViewOption header="Katedra">{cathedraCheckboxes}</FilterViewOption>
@@ -366,7 +396,9 @@ export default function ViewPage() {
                             publicationsMax: filters.publicationCount.max ?? undefined,
                             publicationYears: filters.publicationYears.values().toArray(),
                             publishers: filters.publishers.values().toArray(),
-                            positions: filters.positions.values().toArray()
+                            positions: filters.positions.values().toArray(),
+                            name: filters.name,
+                            surname: filters.surname,
                         })
 
                         if (result) {
