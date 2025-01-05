@@ -68,6 +68,9 @@ export default function ViewPage() {
 
     const perPageLimit = 25
 
+    const [currentPage, setCurrentPage] = useState<number>(1)
+    const [pageCount, setPageCount] = useState<number>(1)
+
     // Only allows selecting a single organization type (unselects the rest)
     useMemo(() => {
         if(usedOrg != UsedOrganization.university) {
@@ -89,9 +92,18 @@ export default function ViewPage() {
             const fetchedOrgData = await fetchInitialOrganizationData()
             const searchResponse: SearchResponse | null = await filters.search(perPageLimit)
 
+            const scientists = searchResponse?.scientists ?? []
+            const scientistCount = searchResponse?.count ?? 0
+
+            const pageCount = Math.ceil(scientistCount / perPageLimit)
+            const selectedPage = pageCount == 0 ? 0 : 1
+
+            setPageCount(pageCount)
+            setCurrentPage(selectedPage)
+
             setOrgData(fetchedOrgData)
-            setScientists(searchResponse?.scientists ?? [])
-            setTotalScientistCount(searchResponse?.count ?? 0)
+            setScientists(scientists)
+            setTotalScientistCount(scientistCount)
         })()
     }, [filters])
 
@@ -342,14 +354,22 @@ export default function ViewPage() {
                 <p className={`text-3xl font-[600]`}>{totalScientistCount !== null ? `Znaleziono ${totalScientistCount} wyników wyszukiwania` : `Odświeżam wyniki...`}</p>
                 <SearchOptions
                     onRefresh={async () => {
-                        setScientists([])
+                        setScientists(null)
                         setTotalScientistCount(null)
 
                         const result: SearchResponse | null = await filters.search(perPageLimit)
 
                         if (result) {
+                            const count = result.count ?? 0
+
+                            const pageCount = Math.ceil(count / perPageLimit)
+                            const selectedPage = pageCount == 0 ? 0 : 1
+
                             setScientists(result.scientists ?? [])
-                            setTotalScientistCount(result.count ?? 0)
+                            setTotalScientistCount(count)
+
+                            setPageCount(pageCount)
+                            setCurrentPage(selectedPage)
                         }
                     }}
                     canResetFilters={hasFilters}
@@ -357,6 +377,20 @@ export default function ViewPage() {
                         filters.resetFilters()
                         setHasFilters(false)
                     }}
+                    selectedPage={currentPage}
+                    pageCount={pageCount}
+                    onPageChange={(page) => {
+                        if(page != currentPage) {
+                            setCurrentPage(page)
+                            setScientists(null)
+
+                            filters.search(perPageLimit, page)
+                                .then((searchResponse) => {
+                                    setScientists(searchResponse?.scientists ?? [])
+                                })
+                        }
+                    }}
+                    isSearchInProgress={scientists == null}
                 />
             </div>
             {scientistCells}

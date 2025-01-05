@@ -25,6 +25,29 @@ export class FilterState {
     name?: string
     surname?: string
 
+    copy(): FilterState {
+        const copied = new FilterState()
+
+        copied.universities = new Set(this.universities)
+        copied.institutes = new Set(this.institutes)
+        copied.cathedras = new Set(this.cathedras)
+
+        copied.ministerialPoints.min = this.ministerialPoints.min
+        copied.ministerialPoints.max = this.ministerialPoints.max
+        copied.publicationCount.min = this.publicationCount.min
+        copied.publicationCount.max = this.publicationCount.max
+        copied.ifScore.min = this.ifScore.min
+        copied.ifScore.max = this.ifScore.max
+
+        copied.publishers = new Set(this.publishers)
+        copied.publicationYears = new Set(this.publicationYears)
+
+        copied.name = this.name
+        copied.surname = this.surname
+
+        return copied
+    }
+
     async search(pageLimit: number, page?: number): Promise<SearchResponse | null> {
         return await fetchSearch({
             organizations: this.getAllOrganizationNames(),
