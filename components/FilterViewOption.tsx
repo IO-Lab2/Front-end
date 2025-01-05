@@ -51,7 +51,7 @@ export function FilterViewOption(props: FilterViewOptionProps) {
             <p className={`text-basetext text-2xl font-[600]`}>{props.header}</p>
         </div>
         <div
-            className={`${expanded ? `min-h-12` : `hidden`} bg-white/30 p-2`}
+            className={`${expanded ? `min-h-12` : `hidden`} bg-white/30 p-2 max-h-72 overflow-y-scroll`}
         >
             {props.children}
         </div>

@@ -1,4 +1,5 @@
 import {setCookie, deleteCookie} from "cookies-next/client";
+import {fetchSearch, SearchResponse} from "@/lib/API";
 
 export class FilterState {
     universities: Set<string> = new Set()
@@ -23,6 +24,24 @@ export class FilterState {
 
     name?: string
     surname?: string
+
+    async search(pageLimit: number, page?: number): Promise<SearchResponse | null> {
+        return await fetchSearch({
+            organizations: this.getAllOrganizationNames(),
+            limit: pageLimit,
+            page: page,
+            ministerialScoreMax: this.ministerialPoints.max || undefined,
+            ministerialScoreMin: this.ministerialPoints.min || undefined,
+            publicationsMax: this.publicationCount.max || undefined,
+            publicationsMin: this.publicationCount.min || undefined,
+            publishers: this.publishers.values().toArray(),
+            positions: this.positions.values().toArray(),
+            name: this.name,
+            surname: this.surname,
+            journalTypes: this.publicationTypes.values().toArray(),
+            // TODO year scores
+        })
+    }
 
     resetFilters(): void {
         this.universities.clear()
@@ -127,15 +146,19 @@ export class FilterState {
                 sameSite: "strict"
             })
         } else {
-            deleteCookie(FilterState.COOKIE_MINISTERIAL_POINTS_MIN)
+            deleteCookie(FilterState.COOKIE_MINISTERIAL_POINTS_MIN, {
+                sameSite: "strict"
+            })
         }
 
         if(this.ministerialPoints.max !== undefined) {
-            setCookie(FilterState.COOKIE_MINISTERIAL_POINTS_MIN, this.ministerialPoints.max, {
+            setCookie(FilterState.COOKIE_MINISTERIAL_POINTS_MAX, this.ministerialPoints.max, {
                 sameSite: "strict"
             })
         } else {
-            deleteCookie(FilterState.COOKIE_MINISTERIAL_POINTS_MAX)
+            deleteCookie(FilterState.COOKIE_MINISTERIAL_POINTS_MAX, {
+                sameSite: "strict"
+            })
         }
     }
 
@@ -145,7 +168,9 @@ export class FilterState {
                 sameSite: "strict"
             })
         } else {
-            deleteCookie(FilterState.COOKIE_PUBLICATION_COUNT_MIN)
+            deleteCookie(FilterState.COOKIE_PUBLICATION_COUNT_MIN, {
+                sameSite: "strict"
+            })
         }
 
         if(this.publicationCount.max !== undefined) {
@@ -153,7 +178,9 @@ export class FilterState {
                 sameSite: "strict"
             })
         } else {
-            deleteCookie(FilterState.COOKIE_PUBLICATION_COUNT_MAX)
+            deleteCookie(FilterState.COOKIE_PUBLICATION_COUNT_MAX, {
+                sameSite: "strict"
+            })
         }
     }
 

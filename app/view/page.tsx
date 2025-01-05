@@ -5,7 +5,7 @@ import {ScientistCell} from "@/components/ScientistCell";
 import {
     fetchGetOrganizationsFilter, fetchPublishers,
     fetchMinisterialScoresRange,
-    fetchPublicationCountRange, fetchSearch,
+    fetchPublicationCountRange,
     Organization, Scientist, SearchResponse, fetchPositions, APIRange, fetchJournalTypes, fetchPublicationYears,
 } from "@/lib/API";
 import {useEffect, useMemo, useState} from "react";
@@ -36,96 +36,58 @@ class OrganizationData {
     surname?: string
 }
 
+enum UsedOrganization {
+    university,
+    cathedra,
+    institute
+}
+
 export default function ViewPage() {
     const [orgData, setOrgData] = useState<OrganizationData | null>(null);
     const [scientists, setScientists] = useState<Scientist[] | null>(null)
     const [hasFilters, setHasFilters] = useState<boolean>(false)
-
-    const [totalScientistCount, setTotalScientistCount] = useState<number>(0)
-
-    const perPageLimit = 25
 
     const filters = useMemo(() => {
         const state = new FilterState()
         // read filters from cookies on first load
         state.readFromCookies(getCookies() ?? {})
         console.log("Reading filters from cookies...")
-        console.log(state)
+
         return state
     }, [])
 
+    const initialUsedOrganization =
+        filters.cathedras.size > 0
+            ? UsedOrganization.cathedra
+            : filters.institutes.size > 0
+                ? UsedOrganization.institute
+                : UsedOrganization.university
+
+    const [usedOrg, setUsedOrg] = useState<UsedOrganization>(initialUsedOrganization)
+    const [totalScientistCount, setTotalScientistCount] = useState<number | null>(null)
+
+    const perPageLimit = 25
+
+    // Only allows selecting a single organization type (unselects the rest)
+    useMemo(() => {
+        if(usedOrg != UsedOrganization.university) {
+            filters.universities.clear()
+            filters.syncUniversityCookie()
+        }
+        if(usedOrg != UsedOrganization.institute) {
+            filters.institutes.clear()
+            filters.syncInstituteCookie()
+        }
+        if(usedOrg != UsedOrganization.cathedra) {
+            filters.cathedras.clear()
+            filters.syncCathedraCookie()
+        }
+    }, [filters, usedOrg])
+
     useEffect(() => {
         (async function () {
-            const allOrganizations = await fetchGetOrganizationsFilter() ?? []
-
-            const fetchedUniversities: Organization[] = []
-            const fetchedCathedras: Organization[] = []
-            const fetchedInstitutes: Organization[] = []
-
-            for (const org of allOrganizations) {
-                switch (org.type.toLowerCase()) {
-                    case "cathedra":
-                        fetchedCathedras.push(org)
-                        break
-                    case "university":
-                        fetchedUniversities.push(org)
-                        break
-                    case "institute":
-                        fetchedInstitutes.push(org)
-                        break
-                }
-            }
-
-            const publicationCountRange: APIRange = await fetchPublicationCountRange()
-            const ministerialPointRange: APIRange = await fetchMinisterialScoresRange()
-
-            const publishers: string[] = await fetchPublishers()
-            const positions: string[] = await fetchPositions()
-            const journalTypes: string[] = await fetchJournalTypes()
-            const publicationYears: number[] = await fetchPublicationYears()
-
-            fetchedUniversities.sort((left, right) => {
-                return left.name.localeCompare(right.name)
-            })
-            fetchedCathedras.sort((left, right) => {
-                return left.name.localeCompare(right.name)
-            })
-            fetchedInstitutes.sort((left, right) => {
-                return left.name.localeCompare(right.name)
-            })
-            publishers.sort((left, right) => {
-                return left.localeCompare(right)
-            })
-            positions.sort((left, right) => {
-                return left.localeCompare(right)
-            })
-            journalTypes.sort((left, right) => {
-                return left.localeCompare(right)
-            })
-            publicationYears.sort().reverse()
-
-            const searchResponse: SearchResponse | null = await fetchSearch({
-                organizations: filters.getAllOrganizationNames(),
-                limit: perPageLimit,
-                ministerialScoreMax: ministerialPointRange.largest,
-                ministerialScoreMin: ministerialPointRange.smallest,
-                publicationsMax: publicationCountRange.largest,
-                publicationsMin: publicationCountRange.smallest,
-                // TODO apply filters read from cookies on first load
-            })
-
-            const fetchedOrgData = new OrganizationData()
-            fetchedOrgData.universities = fetchedUniversities
-            fetchedOrgData.cathedras = fetchedCathedras
-            fetchedOrgData.institutes = fetchedInstitutes
-            fetchedOrgData.journalTypes = journalTypes
-            fetchedOrgData.ministerialPoints.max = ministerialPointRange.largest
-            fetchedOrgData.ministerialPoints.min = ministerialPointRange.smallest
-            fetchedOrgData.publicationCount.max = publicationCountRange.largest
-            fetchedOrgData.publicationCount.min = publicationCountRange.smallest
-            fetchedOrgData.publicationYears = publicationYears
-            fetchedOrgData.publishers = publishers
-            fetchedOrgData.positions = positions
+            const fetchedOrgData = await fetchInitialOrganizationData()
+            const searchResponse: SearchResponse | null = await filters.search(perPageLimit)
 
             setOrgData(fetchedOrgData)
             setScientists(searchResponse?.scientists ?? [])
@@ -141,9 +103,7 @@ export default function ViewPage() {
                 filters.name = value.length > 0 ? value : undefined
 
                 filters.syncNameCookie()
-                if(!hasFilters) {
-                    setHasFilters(true)
-                }
+                setHasFilters(true)
             }}
         />
         <FilterString
@@ -153,9 +113,7 @@ export default function ViewPage() {
                 filters.surname = value.length > 0 ? value : undefined
 
                 filters.syncSurnameCookie()
-                if(!hasFilters) {
-                    setHasFilters(true)
-                }
+                setHasFilters(true)
             }}
         />
     </>
@@ -165,7 +123,7 @@ export default function ViewPage() {
             key={uni.id}
             label={uni.name}
             count={0}
-            isChecked={() => filters.universities.has(uni.name)}
+            isChecked={() => filters.universities.has(decodeURI(uni.name))}
             onChoice={(isChecked) => {
                 if (isChecked) {
                     filters.universities.add(uni.name)
@@ -175,10 +133,9 @@ export default function ViewPage() {
                     console.log(`Removed university filter: ${uni.name}`)
                 }
 
+                setUsedOrg(UsedOrganization.university)
                 filters.syncUniversityCookie()
-                if (!hasFilters) {
-                    setHasFilters(true)
-                }
+                setHasFilters(true)
             }}
         />
     }) ?? []
@@ -198,10 +155,9 @@ export default function ViewPage() {
                     console.log(`Removed institute filter: ${institute.name}`)
                 }
 
+                setUsedOrg(UsedOrganization.institute)
                 filters.syncInstituteCookie()
-                if (!hasFilters) {
-                    setHasFilters(true)
-                }
+                setHasFilters(true)
             }}
         />
     }) ?? []
@@ -221,10 +177,9 @@ export default function ViewPage() {
                     console.log(`Removed cathedra filter: ${cathedra.name}`)
                 }
 
+                setUsedOrg(UsedOrganization.cathedra)
                 filters.syncCathedraCookie()
-                if (!hasFilters) {
-                    setHasFilters(true)
-                }
+                setHasFilters(true)
             }}
         />
     }) ?? []
@@ -245,14 +200,14 @@ export default function ViewPage() {
                 }
 
                 filters.syncPositionCookie()
-                if(!hasFilters) {
-                    setHasFilters(true)
-                }
+                setHasFilters(true)
             }}
         />
     }) ?? []
 
     const publicationCountRange = <FilterRange
+        defaultMin={orgData?.publicationCount.min}
+        defaultMax={orgData?.publicationCount.max}
         min={filters.publicationCount.min ?? 0}
         max={filters.publicationCount.max ?? 0}
         onChange={(min, max) => {
@@ -260,13 +215,13 @@ export default function ViewPage() {
             filters.publicationCount.max = max || undefined
 
             filters.syncPublicationCountCookie()
-            if (!hasFilters) {
-                setHasFilters(true)
-            }
+            setHasFilters(true)
         }}
     />
 
     const ministerialPointRange = <FilterRange
+        defaultMin={orgData?.ministerialPoints.min}
+        defaultMax={orgData?.ministerialPoints.max}
         min={filters.ministerialPoints.min ?? 0}
         max={filters.ministerialPoints.max ?? 0}
         onChange={(min, max) => {
@@ -274,9 +229,19 @@ export default function ViewPage() {
             filters.ministerialPoints.max = max || undefined
 
             filters.syncMinisterialPointsCookie()
-            if (!hasFilters) {
-                setHasFilters(true)
-            }
+            setHasFilters(true)
+        }}
+    />
+
+    const ifScorePointRange = <FilterRange
+        min={filters.ifScore.min ?? 0}
+        max={filters.ifScore.max ?? 0}
+        onChange={(min, max) => {
+            filters.ifScore.min = min || undefined
+            filters.ifScore.max = max || undefined
+
+            filters.syncIFScoreCookie()
+            setHasFilters(true)
         }}
     />
 
@@ -296,9 +261,7 @@ export default function ViewPage() {
                 }
 
                 filters.syncPublisherCookie()
-                if(!hasFilters) {
-                    setHasFilters(true)
-                }
+                setHasFilters(true)
             }}
         />
     }) ?? []
@@ -319,9 +282,7 @@ export default function ViewPage() {
                 }
 
                 filters.syncPublicationTypeCookie()
-                if(!hasFilters) {
-                    setHasFilters(true)
-                }
+                setHasFilters(true)
             }}
         />
     })
@@ -343,9 +304,7 @@ export default function ViewPage() {
                 }
 
                 filters.syncPublicationYearCookie()
-                if(!hasFilters) {
-                    setHasFilters(true)
-                }
+                setHasFilters(true)
             }}
         />
     })
@@ -371,7 +330,7 @@ export default function ViewPage() {
             <FilterViewOption header="Stanowisko">{positionCheckboxes}</FilterViewOption>
             <FilterViewOption header="Ilość Publikacji">{publicationCountRange}</FilterViewOption>
             <FilterViewOption header="Ilość Punktów Ministerialnych">{ministerialPointRange}</FilterViewOption>
-            <FilterViewOption header="Współczynnik IF"/>
+            <FilterViewOption header="Współczynnik IF">{ifScorePointRange}</FilterViewOption>
             <FilterViewOption header="Wydawca">{publishersCheckboxes}</FilterViewOption>
             <FilterViewOption header="Lata Wydawania Publikacji">{publicationYearCheckboxes}</FilterViewOption>
             <FilterViewOption header="Rodzaj Publikacji">{journalTypeCheckboxes}</FilterViewOption>
@@ -380,26 +339,13 @@ export default function ViewPage() {
         </div>
         <div className={`flex-1`}>
             <div className={`pl-8 pr-8 p-6 w-full content-center flex flex-col gap-4`}>
-                <p className={`text-3xl font-[600]`}>Znaleziono {totalScientistCount} wyników wyszukiwania</p>
+                <p className={`text-3xl font-[600]`}>{totalScientistCount !== null ? `Znaleziono ${totalScientistCount} wyników wyszukiwania` : `Odświeżam wyniki...`}</p>
                 <SearchOptions
                     onRefresh={async () => {
                         setScientists([])
-                        setTotalScientistCount(0)
+                        setTotalScientistCount(null)
 
-                        const result: SearchResponse | null = await fetchSearch({
-                            journalTypes: filters.publicationTypes.values().toArray(),
-                            organizations: filters.getAllOrganizationNames(),
-                            limit: perPageLimit,
-                            ministerialScoreMax: filters.ministerialPoints.max ?? undefined,
-                            ministerialScoreMin: filters.ministerialPoints.min ?? undefined,
-                            publicationsMin: filters.publicationCount.min ?? undefined,
-                            publicationsMax: filters.publicationCount.max ?? undefined,
-                            publicationYears: filters.publicationYears.values().toArray(),
-                            publishers: filters.publishers.values().toArray(),
-                            positions: filters.positions.values().toArray(),
-                            name: filters.name,
-                            surname: filters.surname,
-                        })
+                        const result: SearchResponse | null = await filters.search(perPageLimit)
 
                         if (result) {
                             setScientists(result.scientists ?? [])
@@ -416,4 +362,69 @@ export default function ViewPage() {
             {scientistCells}
         </div>
     </div>
+}
+
+async function fetchInitialOrganizationData(): Promise<OrganizationData> {
+    const allOrganizations = await fetchGetOrganizationsFilter() ?? []
+
+    const fetchedUniversities: Organization[] = []
+    const fetchedCathedras: Organization[] = []
+    const fetchedInstitutes: Organization[] = []
+
+    for (const org of allOrganizations) {
+        switch (org.type.toLowerCase()) {
+            case "cathedra":
+                fetchedCathedras.push(org)
+                break
+            case "university":
+                fetchedUniversities.push(org)
+                break
+            case "institute":
+                fetchedInstitutes.push(org)
+                break
+        }
+    }
+
+    const publicationCountRange: APIRange = await fetchPublicationCountRange()
+    const ministerialPointRange: APIRange = await fetchMinisterialScoresRange()
+
+    const publishers: string[] = await fetchPublishers()
+    const positions: string[] = await fetchPositions()
+    const journalTypes: string[] = await fetchJournalTypes()
+    const publicationYears: number[] = await fetchPublicationYears()
+
+    fetchedUniversities.sort((left, right) => {
+        return left.name.localeCompare(right.name)
+    })
+    fetchedCathedras.sort((left, right) => {
+        return left.name.localeCompare(right.name)
+    })
+    fetchedInstitutes.sort((left, right) => {
+        return left.name.localeCompare(right.name)
+    })
+    publishers.sort((left, right) => {
+        return left.localeCompare(right)
+    })
+    positions.sort((left, right) => {
+        return left.localeCompare(right)
+    })
+    journalTypes.sort((left, right) => {
+        return left.localeCompare(right)
+    })
+    publicationYears.sort().reverse()
+
+    const fetchedOrgData = new OrganizationData()
+    fetchedOrgData.universities = fetchedUniversities
+    fetchedOrgData.cathedras = fetchedCathedras
+    fetchedOrgData.institutes = fetchedInstitutes
+    fetchedOrgData.journalTypes = journalTypes
+    fetchedOrgData.ministerialPoints.max = ministerialPointRange.largest
+    fetchedOrgData.ministerialPoints.min = ministerialPointRange.smallest
+    fetchedOrgData.publicationCount.max = publicationCountRange.largest
+    fetchedOrgData.publicationCount.min = publicationCountRange.smallest
+    fetchedOrgData.publicationYears = publicationYears
+    fetchedOrgData.publishers = publishers
+    fetchedOrgData.positions = positions
+
+    return fetchedOrgData
 }
