@@ -39,7 +39,6 @@ export function SearchOptions(props: SearchOptionsProps) {
 
     const enableButtons = !props.isSearchInProgress
 
-    // FIXME: breaks if user changes options and then changes page instead of refreshing
     return (
         <div className={`flex flex-col gap-4`}>
             <div className={`flex gap-6`}>
@@ -49,7 +48,7 @@ export function SearchOptions(props: SearchOptionsProps) {
                 >
                     Odśwież Wyniki
                 </div>
-                <div className={`w-60 h-12 ${buttonCommon} bg-black/80 cursor-pointer`}>
+                <div className={`w-60 h-12 ${buttonCommon} bg-black/80 ${enableButtons ? "cursor-pointer" : disabledButton}`}>
                     Sortuj Według:
                 </div>
                 <div

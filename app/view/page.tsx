@@ -8,7 +8,7 @@ import {
     fetchPublicationCountRange,
     Organization, Scientist, SearchResponse, fetchPositions, APIRange, fetchJournalTypes, fetchPublicationYears,
 } from "@/lib/API";
-import {useEffect, useMemo, useState} from "react";
+import {useEffect, useMemo, useRef, useState} from "react";
 import {SearchOptions} from "@/components/SearchOptions";
 import {FilterState} from "@/lib/FilterState";
 import {getCookies} from "cookies-next/client";
@@ -106,6 +106,8 @@ export default function ViewPage() {
             setTotalScientistCount(scientistCount)
         })()
     }, [filters])
+
+    const previousFilters = useRef(filters.copy())
 
     const nameField = <>
         <FilterString
@@ -356,6 +358,7 @@ export default function ViewPage() {
                     onRefresh={async () => {
                         setScientists(null)
                         setTotalScientistCount(null)
+                        previousFilters.current = filters.copy()
 
                         const result: SearchResponse | null = await filters.search(perPageLimit)
 
@@ -384,7 +387,7 @@ export default function ViewPage() {
                             setCurrentPage(page)
                             setScientists(null)
 
-                            filters.search(perPageLimit, page)
+                            previousFilters.current.search(perPageLimit, page)
                                 .then((searchResponse) => {
                                     setScientists(searchResponse?.scientists ?? [])
                                 })
