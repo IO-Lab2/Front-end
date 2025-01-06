@@ -1,6 +1,6 @@
 'use client'
 
-import React, {useReducer, useState} from "react";
+import React, { useState} from "react";
 
 export interface FilterViewOptionProps {
     header?: string
@@ -10,27 +10,21 @@ export interface FilterViewOptionProps {
 export interface FilterCheckboxProps {
     label: string
     count: number
-    isChecked?: () => boolean
+    isChecked?: boolean,
     onChoice?: (isChecked: boolean) => void
 }
 
 export function FilterCheckbox(props: FilterCheckboxProps) {
     const onChoice = props.onChoice
-    const isChecked = props.isChecked
-
-    const [, forceUpdate] = useReducer(x => x + 1, 0)
 
     return <div className={`m-1`}>
         <input
             className={`m-1 size-5 align-middle`}
             type="checkbox"
-            checked={isChecked ? isChecked() : undefined}
+            checked={props.isChecked}
             onChange={
                 (value) => {
-                    if(onChoice) {
-                        onChoice(value.target.checked)
-                    }
-                    forceUpdate()
+                    if(onChoice) { onChoice(value.target.checked) }
                 }
             }/>
         <span className={`p-2 font-[600] align-middle`}>{props.label}</span>

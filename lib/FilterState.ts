@@ -100,6 +100,24 @@ export class FilterState {
         deleteCookie(FilterState.COOKIE_SURNAME, { sameSite: "strict" })
     }
 
+    hasFilters(): boolean {
+        return this.universities.size > 0
+            || this.institutes.size > 0
+            || this.cathedras.size > 0
+            || this.positions.size > 0
+            || this.ministerialPoints.min !== undefined
+            || this.ministerialPoints.max !== undefined
+            || this.publicationCount.min !== undefined
+            || this.publicationCount.max !== undefined
+            || this.ifScore.min !== undefined
+            || this.ifScore.max !== undefined
+            || this.publishers.size > 0
+            || this.publicationYears.size > 0
+            || this.publicationTypes.size > 0
+            || this.name !== undefined
+            || this.surname !== undefined
+    }
+
     getAllOrganizationNames(): string[] {
         const combined: string[] = []
         for(const uni of this.universities) {
@@ -213,7 +231,9 @@ export class FilterState {
                 sameSite: "strict"
             })
         } else {
-            deleteCookie(FilterState.COOKIE_IF_SCORE_MIN)
+            deleteCookie(FilterState.COOKIE_IF_SCORE_MIN, {
+                sameSite: "strict"
+            })
         }
 
         if(this.ifScore.max !== undefined) {
@@ -221,7 +241,9 @@ export class FilterState {
                 sameSite: "strict"
             })
         } else {
-            deleteCookie(FilterState.COOKIE_IF_SCORE_MAX)
+            deleteCookie(FilterState.COOKIE_IF_SCORE_MAX, {
+                sameSite: "strict"
+            })
         }
 
     }

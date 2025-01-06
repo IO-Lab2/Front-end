@@ -1,18 +1,14 @@
 'use client'
 
-import {useReducer} from "react";
-
 export interface FilterStringProps {
     label: string,
-    value?: () => string,
+    value?: string,
     onChanged?: (value: string) => void
 }
 
 export function FilterString(props: FilterStringProps) {
     const onChanged = props.onChanged
-    const fieldText = props.value ? props.value() : ""
-
-    const [, forceUpdate] = useReducer(x => x + 1, 0)
+    const fieldText = props.value ?? ""
 
     return <div className={`font-[600] p-1 flex gap-2`}>
         <input
@@ -23,7 +19,6 @@ export function FilterString(props: FilterStringProps) {
             onChange={
                 (value) => {
                     if (onChanged) { onChanged(value.target.value) }
-                    forceUpdate()
                 }
             }
         />
@@ -32,7 +27,6 @@ export function FilterString(props: FilterStringProps) {
             hidden={fieldText.length == 0}
             onClick={() => {
                 if(onChanged) { onChanged("") }
-                forceUpdate()
             }}
         >
             x
