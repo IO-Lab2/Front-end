@@ -53,10 +53,10 @@ export default function ComparePage() {
     })
 
     return <div className={`w-full h-full`}>
-        <div className={`flex p-4 gap-4`}>
+        <div className={`flex p-2 flex-wrap`}>
             {scientistCards}
         </div>
-        <div className={`flex justify-center`}>
+        <div className={`flex justify-center mb-4`}>
             <div
                 className={
                     `w-52 h-16 m-0 bg-black font-[600] text-2xl text-white text-center content-center cursor-pointer rounded-3xl`

@@ -46,6 +46,7 @@ enum UsedOrganization {
 
 export default function ViewPage() {
     const perPageLimit = 25
+    const compareLimit = CompareState.LIMIT
     const router = useRouter()
 
     const filters = useMemo(() => {
@@ -505,7 +506,15 @@ export default function ViewPage() {
                     }}
                     isSearchInProgress={scientists == null}
                     compareCount={compareInfo.scientists.size}
+                    compareLimit={compareLimit}
                     onCompare={() => { router.replace("/compare") }}
+                    onResetCompare={
+                        () => {
+                            compareInfo.scientists.clear()
+                            compareInfo.syncCookie()
+                            setScientistsChanged(true)
+                        }
+                    }
                 />
             </div>
             {scientistCells}

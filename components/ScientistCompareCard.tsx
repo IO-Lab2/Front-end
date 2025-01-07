@@ -10,7 +10,7 @@ export interface ScientistCompareCardProps {
 export default function ScientistCompareCard(props: ScientistCompareCardProps) {
     const organizations = props.organizations ?? [];
 
-    return <div className={`flex-1`}>
+    return <div className={`flex-1 basis-1/3 box-context p-2`}>
         <div className={`p-4 bg-black/80 rounded-t-xl text-3xl`}>
             <p className={`font-semibold`}>
                 <span className={`text-basetext`}>

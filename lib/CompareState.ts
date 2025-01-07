@@ -4,10 +4,9 @@ import {packCookieSet, unpackCookie} from "@/lib/CookieHelpers";
 
 export class CompareState {
     scientists: Set<UUID> = new Set()
-    limit: number = 2
 
     add(id: UUID): boolean {
-        if(this.scientists.size < this.limit) {
+        if(this.scientists.size < CompareState.LIMIT) {
             this.scientists.add(id);
             console.log(`Added scientist for comparison: ${id}`)
             return true
@@ -30,10 +29,12 @@ export class CompareState {
     }
 
     readFromCookies(cookies: { [key: string]: string | undefined}) {
-        const cookie = decodeURI(cookies[CompareState.COOKIE_COMPARE] as string).replace("%2C", ",") // HACK: i hate webdev
+        const cookie = decodeURI(cookies[CompareState.COOKIE_COMPARE] as string).replaceAll("%2C", ",") // HACK: i hate webdev
+        console.log(`Cookie ${cookie}`)
         this.scientists = unpackCookie(cookie)
     }
 
     static readonly COOKIE_COMPARE: string = "compare"
+    static readonly LIMIT: number = 4
 }
 

@@ -18,7 +18,9 @@ export interface SearchOptionsProps {
     canResetFilters?: boolean,
     isSearchInProgress?: boolean,
     compareCount?: number,
+    compareLimit?: number,
     onCompare?: () => void,
+    onResetCompare?: () => void,
 }
 
 export function SearchOptions(props: SearchOptionsProps) {
@@ -26,6 +28,7 @@ export function SearchOptions(props: SearchOptionsProps) {
     const onFilterReset = props.onFilterReset
     const onPageChange = props.onPageChange
     const onCompare = props.onCompare
+    const onResetCompare = props.onResetCompare
 
     // TODO Sorting Options
     // const onSortMethodChange = props.onSortMethodChange
@@ -53,20 +56,31 @@ export function SearchOptions(props: SearchOptionsProps) {
                 >
                     Odśwież Wyniki
                 </div>
-                <div className={`w-60 h-12 ${buttonCommon} bg-black/80 ${enableButtons ? "cursor-pointer" : disabledButton}`}>
+                <div
+                    className={`w-60 h-12 ${buttonCommon} bg-black/80 ${enableCompare ? "cursor-pointer" : disabledButton}`}
+                    onClick={(enableCompare && onCompare) ? () => onCompare() : undefined}
+                >
+                    Porównaj ({compareCount ?? 0}{props.compareLimit ? `, max ${props.compareLimit}` : ""})
+                </div>
+                <div
+                    className={`w-60 h-12 ${buttonCommon} bg-black/80 ${enableButtons ? "cursor-pointer" : disabledButton}`}>
                     Sortuj Według:
                 </div>
+            </div>
+
+            <div className={`flex gap-6`}>
                 <div
                     className={`w-60 h-12 ${buttonCommon} bg-black/80 ${enableButtons && canResetFilters ? "cursor-pointer" : disabledButton}`}
                     onClick={(enableButtons && onFilterReset && canResetFilters) ? () => onFilterReset() : undefined}
                 >
                     Resetuj Filtry
                 </div>
+
                 <div
-                    className={`w-60 h-12 ${buttonCommon} bg-black/80 ${enableCompare ? "cursor-pointer" : disabledButton}`}
-                    onClick={(enableButtons && onCompare) ? () => onCompare() : undefined}
+                    className={`w-60 h-12 ${buttonCommon} bg-black/80 ${enableButtons && (compareCount > 0) ? "cursor-pointer" : disabledButton}`}
+                    onClick={(enableButtons && (compareCount > 0) && onResetCompare) ? () => onResetCompare() : undefined}
                 >
-                    Porównaj ({compareCount ?? 0})
+                    Resetuj Porównywanie
                 </div>
             </div>
 
