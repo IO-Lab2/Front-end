@@ -17,12 +17,15 @@ export interface SearchOptionsProps {
     onFilterReset?: () => void,
     canResetFilters?: boolean,
     isSearchInProgress?: boolean,
+    compareCount?: number,
+    onCompare?: () => void,
 }
 
 export function SearchOptions(props: SearchOptionsProps) {
     const onRefresh = props.onRefresh
     const onFilterReset = props.onFilterReset
     const onPageChange = props.onPageChange
+    const onCompare = props.onCompare
 
     // TODO Sorting Options
     // const onSortMethodChange = props.onSortMethodChange
@@ -36,8 +39,10 @@ export function SearchOptions(props: SearchOptionsProps) {
     const pageCount = props.pageCount ?? 1
     const hasPrevPage = selectedPage > 1
     const hasNextPage = selectedPage < pageCount
+    const compareCount = props.compareCount ?? 0
 
     const enableButtons = !props.isSearchInProgress
+    const enableCompare = enableButtons && compareCount > 1
 
     return (
         <div className={`flex flex-col gap-4`}>
@@ -52,12 +57,19 @@ export function SearchOptions(props: SearchOptionsProps) {
                     Sortuj Według:
                 </div>
                 <div
-                    className={`w-60 h-12 ${buttonCommon} bg-black/80 ${canResetFilters ? "cursor-pointer" : disabledButton}`}
+                    className={`w-60 h-12 ${buttonCommon} bg-black/80 ${enableButtons && canResetFilters ? "cursor-pointer" : disabledButton}`}
                     onClick={(enableButtons && onFilterReset && canResetFilters) ? () => onFilterReset() : undefined}
                 >
                     Resetuj Filtry
                 </div>
+                <div
+                    className={`w-60 h-12 ${buttonCommon} bg-black/80 ${enableCompare ? "cursor-pointer" : disabledButton}`}
+                    onClick={(enableButtons && onCompare) ? () => onCompare() : undefined}
+                >
+                    Porównaj ({compareCount ?? 0})
+                </div>
             </div>
+
             <div className={`flex gap-2`}>
                 <div
                     className={`w-12 h-12 ${buttonCommon} bg-black/80 ${(hasPrevPage && enableButtons) ? "cursor-pointer" : disabledButton}`}

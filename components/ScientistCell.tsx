@@ -11,6 +11,8 @@ export interface ScientistCellProps {
     researchAreas: Array<{ name: string }>,
     institute: string,
     cathedra: string,
+    selectedForComparison?: boolean
+    onSelectForComparison?: (select: boolean) => void
 }
 
 export function ScientistCell(props: ScientistCellProps) {
@@ -22,6 +24,9 @@ export function ScientistCell(props: ScientistCellProps) {
             return <span key={name} className={`capitalize`}>{suffix}{name}</span>
         })
     }, [props.researchAreas])
+
+    const selectedForComparison = props.selectedForComparison || false
+    const onSelectForComparison = props.onSelectForComparison
 
     return (
         <div className="p-12 w-full h-72 even:bg-white/30 flex gap-4">
@@ -51,6 +56,12 @@ export function ScientistCell(props: ScientistCellProps) {
                 <input
                     className={`align-middle m-auto size-10`}
                     type="checkbox"
+                    checked={selectedForComparison}
+                    onChange={
+                        onSelectForComparison
+                            ? (value) => onSelectForComparison(value.target.checked)
+                            : undefined
+                    }
                 />
             </div>
         </div>

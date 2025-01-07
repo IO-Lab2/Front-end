@@ -14,6 +14,8 @@ import {FilterState} from "@/lib/FilterState";
 import {getCookies} from "cookies-next/client";
 import {FilterRange} from "@/components/FilterViewRange";
 import {FilterString} from "@/components/FilterViewString";
+import {CompareState} from "@/lib/CompareState";
+import {useRouter} from "next/navigation";
 
 class OrganizationData {
     constructor() {
@@ -44,12 +46,21 @@ enum UsedOrganization {
 
 export default function ViewPage() {
     const perPageLimit = 25
+    const router = useRouter()
 
     const filters = useMemo(() => {
         const state = new FilterState()
         // read filters from cookies on first load
         state.readFromCookies(getCookies() ?? {})
         console.log("Reading filters from cookies...")
+
+        return state
+    }, [])
+
+    const compareInfo = useMemo(() => {
+        const state = new CompareState()
+        state.readFromCookies(getCookies() ?? {})
+        console.log("Reading comparison info from cookies...")
 
         return state
     }, [])
@@ -82,6 +93,7 @@ export default function ViewPage() {
     const [publishersFilterChanged, setPublishersFilterChanged] = useState<boolean>(true)
     const [journalFilterChanged, setJournalFilterChanged] = useState<boolean>(true)
     const [publicationYearFilterChanged, setPublicationYearFilterChanged] = useState<boolean>(true)
+    const [scientistsChanged, setScientistsChanged] = useState<boolean>(true)
 
     // Only allows selecting a single organization type (unselects the rest)
     useMemo(() => {
@@ -401,18 +413,37 @@ export default function ViewPage() {
         }) ?? []
     }, [filters, publicationYearFilterChanged, hasFilters, orgData])
 
-    const scientistCells = (scientists ?? [])
-        .map((scientist) => {
-            return <ScientistCell
-                scientistID={scientist.id}
-                key={scientist.id}
-                title={scientist.academic_title}
-                name={`${scientist.first_name} ${scientist.last_name}`}
-                researchAreas={scientist.research_areas ?? []}
-                institute={"NYI (Institute)"}
-                cathedra={"NYI (Cathedra)"}
-            />
-        })
+    const scientistCells = useMemo(() => {
+        setScientistsChanged(false)
+
+        return (scientists ?? [])
+            .map((scientist) => {
+                return <ScientistCell
+                    scientistID={scientist.id}
+                    key={scientist.id}
+                    title={scientist.academic_title}
+                    name={`${scientist.first_name} ${scientist.last_name}`}
+                    researchAreas={scientist.research_areas ?? []}
+                    institute={"NYI (Institute)"}
+                    cathedra={"NYI (Cathedra)"}
+                    selectedForComparison={compareInfo.scientists.has(scientist.id)}
+                    onSelectForComparison={(select) => {
+                        let modified: boolean
+                        if(select) {
+                            modified = compareInfo.add(scientist.id)
+                        } else {
+                            modified = compareInfo.remove(scientist.id)
+                        }
+
+                        if(modified) {
+                            compareInfo.syncCookie()
+                            if(!scientistsChanged) { setScientistsChanged(true) }
+                        }
+                    }}
+                />
+            }
+        )
+    }, [compareInfo, scientists, scientistsChanged])
 
     return <div className={`w-full h-full flex`}>
         <div className={`h-full max-h-full w-[30rem] flex-shrink-0 flex flex-col`}>
@@ -473,6 +504,8 @@ export default function ViewPage() {
                         }
                     }}
                     isSearchInProgress={scientists == null}
+                    compareCount={compareInfo.scientists.size}
+                    onCompare={() => { router.replace("/compare") }}
                 />
             </div>
             {scientistCells}

@@ -53,20 +53,20 @@ export default function ScientistPage() {
             </div>
             <div className={`flex flex-col justify-center gap-6 w-60 text-lg`}>
                 <div
-                    className={`p-2 h-20 bg-black/80 rounded-2xl text-center content-center text-basetext font-bold cursor-pointer`}
+                    className={`p-2 h-20 bg-black/80 rounded-xl text-center content-center text-basetext font-bold cursor-pointer`}
                     onClick={() => { router.replace("/view") }}
                 >
                     &lt; Wróć
                 </div>
                 <form action={scientist.profile_url} target="_blank">
                     <input
-                        className={`p-2 h-20 w-full bg-black/80 rounded-2xl text-center content-center text-basetext font-bold text-wrap cursor-pointer`}
+                        className={`p-2 h-20 w-full bg-black/80 rounded-xl text-center content-center text-basetext font-bold text-wrap cursor-pointer`}
                         type="submit"
                         value="Profil w bazie uczelni"
                     />
                 </form>
                 <div
-                    className={`p-2 h-20 bg-black/80 rounded-2xl text-center content-center text-basetext font-bold cursor-pointer`}
+                    className={`p-2 h-20 bg-black/80 rounded-xl text-center content-center text-basetext font-bold cursor-pointer`}
                 >
                     Dodaj do porównania &gt;
                 </div>

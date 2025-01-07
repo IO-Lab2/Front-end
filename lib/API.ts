@@ -262,6 +262,24 @@ export async function fetchScientistInfo(id: string): Promise<Scientist | null> 
     }
 }
 
+export async function fetchOrganizationsByScientistID(id: string): Promise<Organization[] | null> {
+    try {
+        const orgs = await fetch(`https://api.epickaporownywarkabazwiedzyuczelni.rocks/api/organizations/scientist/${id}`, {
+            method: "GET",
+            cache: "force-cache"
+        }).then(res => res.json())
+
+        if(Array.isArray(orgs)) {
+            return orgs
+        } else {
+            return []
+        }
+    } catch(ex) {
+        console.error(`Nie udało się pobrać informacji o organizacjach naukowca: ${ex}`)
+        return null
+    }
+}
+
 export async function fetchSearch(query: SearchQuery): Promise<SearchResponse | null> {
     const queryParams = new URLSearchParams()
 

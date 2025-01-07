@@ -1,5 +1,6 @@
 import {setCookie, deleteCookie} from "cookies-next/client";
 import {fetchSearch, SearchResponse} from "@/lib/API";
+import {packCookieSet, unpackCookie} from "@/lib/CookieHelpers";
 
 export class FilterState {
     universities: Set<string> = new Set()
@@ -301,17 +302,4 @@ export class FilterState {
     static readonly COOKIE_PUBLICATION_TYPE: string = "publicationType"
     static readonly COOKIE_NAME: string = "name"
     static readonly COOKIE_SURNAME: string = "surname"
-}
-
-function unpackCookie<T>(cookie: string | undefined): Set<T> {
-    try {
-        return new Set(JSON.parse(decodeURI(cookie ?? "[]")) as T[])
-    } catch(ex) {
-        console.log(ex)
-        return new Set()
-    }
-}
-
-function packCookieSet<T>(cookies: Set<T>): string {
-    return JSON.stringify(cookies.values().toArray())
 }
