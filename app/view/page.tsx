@@ -404,10 +404,11 @@ export default function ViewPage() {
     const scientistCells = (scientists ?? [])
         .map((scientist) => {
             return <ScientistCell
+                scientistID={scientist.id}
                 key={scientist.id}
                 title={scientist.academic_title}
                 name={`${scientist.first_name} ${scientist.last_name}`}
-                researchArea={scientist.research_areas?.map(area => area.name).join(", ") ?? ""}
+                researchAreas={scientist.research_areas ?? []}
                 institute={"NYI (Institute)"}
                 cathedra={"NYI (Cathedra)"}
             />

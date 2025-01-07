@@ -12,10 +12,10 @@ export interface Organization {
 
 /** API reference: <https://api.epickaporownywarkabazwiedzyuczelni.rocks/docs#/schemas/Bibliometrics> */
 export interface Bibliometrics {
-    hIndexScopus: number,
-    hIndexWos: number,
-    ministerialScore?: number,
-    publicationCount?: number
+    h_index_scopus: number,
+    h_index_wos: number,
+    ministerial_score?: number,
+    publication_count?: number
 }
 
 /** API reference: <https://api.epickaporownywarkabazwiedzyuczelni.rocks/docs#/schemas/ScientistBody> */
@@ -250,6 +250,18 @@ export async function fetchJournalTypes(): Promise<string[]> {
     }
 }
 
+export async function fetchScientistInfo(id: string): Promise<Scientist | null> {
+    try {
+        return await fetch(`https://api.epickaporownywarkabazwiedzyuczelni.rocks/api/scientists/${id}`, {
+            method: "GET",
+            cache: "force-cache"
+        }).then(res => res.json())
+    } catch(ex) {
+        console.error(`Nie udało się pobrać informacji o naukowcu: ${ex}`)
+        return null
+    }
+}
+
 export async function fetchSearch(query: SearchQuery): Promise<SearchResponse | null> {
     const queryParams = new URLSearchParams()
 
@@ -328,6 +340,7 @@ export async function fetchSearch(query: SearchQuery): Promise<SearchResponse | 
     try {
         return await fetch("https://api.epickaporownywarkabazwiedzyuczelni.rocks/api/search?" + queryParams, {
             method: "GET",
+            cache: "no-cache"
         }).then(res => res.json())
     } catch(ex) {
         console.error(`Wyszukiwanie nie powiodło się: ${ex}`)
