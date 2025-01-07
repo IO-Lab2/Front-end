@@ -283,16 +283,17 @@ export async function fetchOrganizationsByScientistID(id: string): Promise<Organ
 export async function fetchSearch(query: SearchQuery): Promise<SearchResponse | null> {
     const queryParams = new URLSearchParams()
 
-    if(query.academicTitles !== undefined) {
-        // FIXME apparently the API server only reads the first item in the array and ignores the rest? Figure out whichever query format it wants.
-        for(const title of query.academicTitles) {
-            queryParams.append("academic_titles[]", title)
-        }
+    if(query.academicTitles !== undefined && query.academicTitles.length > 0) {
+        // for(const title of query.academicTitles) {
+        //     queryParams.append("academic_titles[]", title)
+        // }
+        queryParams.append("academic_titles[]", query.academicTitles.join(","))
     }
-    if(query.journalTypes !== undefined) {
-        for(const journal of query.journalTypes) {
-            queryParams.append("journal_types[]", journal)
-        }
+    if(query.journalTypes !== undefined && query.journalTypes.length > 0) {
+        // for(const journal of query.journalTypes) {
+        //     queryParams.append("journal_types[]", journal)
+        // }
+        queryParams.append("journal_types[]", query.journalTypes.join(","))
     }
     if(query.limit !== undefined) {
         queryParams.append("limit", query.limit.toString())
@@ -306,22 +307,25 @@ export async function fetchSearch(query: SearchQuery): Promise<SearchResponse | 
     if(query.name !== undefined) {
         queryParams.append("name", query.name)
     }
-    if(query.organizations !== undefined) {
-        for(const organization of query.organizations) {
-            if(organization != "") {
-                queryParams.append("organizations[]", organization)
-            }
-        }
+    if(query.organizations !== undefined && query.organizations.length > 0) {
+        // for(const organization of query.organizations) {
+        //     if(organization != "") {
+        //         queryParams.append("organizations[]", organization)
+        //     }
+        // }
+        queryParams.append("organizations[]", query.organizations.join(","))
     }
     if(query.page !== undefined) {
         queryParams.append("page", query.page.toString())
     }
-    if(query.positions !== undefined) {
-        for(const position of query.positions) {
-            if(position != "") {
-                queryParams.append("positions[]", position)
-            }
-        }
+    if(query.positions !== undefined && query.positions.length > 0) {
+        // for(const position of query.positions) {
+        //     if(position != "") {
+        //         queryParams.append("positions[]", position)
+        //     }
+        // }
+
+        queryParams.append("positions[]", query.positions.join(","))
     }
     if(query.publicationsMax !== undefined) {
         queryParams.append("publications_max", query.publicationsMax.toString())
@@ -329,22 +333,25 @@ export async function fetchSearch(query: SearchQuery): Promise<SearchResponse | 
     if(query.publicationsMin !== undefined) {
         queryParams.append("publications_min", query.publicationsMin.toString())
     }
-    if(query.publicationYears !== undefined) {
-        for(const year of query.publicationYears) {
-            queryParams.append("publications_years[]", year.toString()) // FIXME doesn't work?
-        }
+    if(query.publicationYears !== undefined && query.publicationYears.length > 0) {
+        // for(const year of query.publicationYears) {
+        //     queryParams.append("publications_years[]", year.toString()) // FIXME doesn't work?
+        // }
+        queryParams.append("publications_years[]", query.publicationYears.join(","))
     }
-    if(query.publishers !== undefined) {
-        for(const publisher of query.publishers) {
-            queryParams.append("publishers[]", publisher.toString())
-        }
+    if(query.publishers !== undefined && query.publishers.length > 0) {
+        // for(const publisher of query.publishers) {
+        //     queryParams.append("publishers[]", publisher.toString())
+        // }
+        queryParams.append("publishers[]", query.publishers.join(","))
     }
-    if(query.researchAreas !== undefined) {
-        for(const area of query.researchAreas) {
-            if(area != "") {
-                queryParams.append("research_areas[]", area)
-            }
-        }
+    if(query.researchAreas !== undefined && query.researchAreas.length > 0) {
+        // for(const area of query.researchAreas) {
+        //     if(area != "") {
+        //         queryParams.append("research_areas[]", area)
+        //     }
+        // }
+        queryParams.append("research_areas[]", query.researchAreas.join(","))
     }
     if(query.surname !== undefined) {
         queryParams.append("surname", query.surname)
