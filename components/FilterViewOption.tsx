@@ -1,6 +1,6 @@
 'use client'
 
-import React, {useState} from "react";
+import React, { useState} from "react";
 
 export interface FilterViewOptionProps {
     header?: string
@@ -10,25 +10,21 @@ export interface FilterViewOptionProps {
 export interface FilterCheckboxProps {
     label: string
     count: number
-    isChecked?: () => boolean
+    isChecked?: boolean,
     onChoice?: (isChecked: boolean) => void
 }
 
 export function FilterCheckbox(props: FilterCheckboxProps) {
     const onChoice = props.onChoice
-    const [selection, setSelection] = useState(props.isChecked ? props.isChecked() : false)
 
     return <div className={`m-1`}>
         <input
             className={`m-1 size-5 align-middle`}
             type="checkbox"
-            checked={selection}
+            checked={props.isChecked}
             onChange={
                 (value) => {
-                    if(onChoice) {
-                        onChoice(value.target.checked)
-                    }
-                    setSelection(value.target.checked)
+                    if(onChoice) { onChoice(value.target.checked) }
                 }
             }/>
         <span className={`p-2 font-[600] align-middle`}>{props.label}</span>
@@ -49,7 +45,7 @@ export function FilterViewOption(props: FilterViewOptionProps) {
             <p className={`text-basetext text-2xl font-[600]`}>{props.header}</p>
         </div>
         <div
-            className={`${expanded ? `min-h-12` : `hidden`} bg-white/30 p-2`}
+            className={`${expanded ? `min-h-12` : `hidden`} bg-white/30 p-2 max-h-72 overflow-y-scroll`}
         >
             {props.children}
         </div>

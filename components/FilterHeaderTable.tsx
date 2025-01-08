@@ -1,6 +1,6 @@
 'use client'
 
-import {fetchGetOrganizationsTree, OrganizationBody} from "@/lib/API";
+import {fetchGetOrganizationsTree, Organization} from "@/lib/API";
 import {OrganizationCell} from "@/components/OrganizationCell";
 import {useEffect, useState} from "react";
 import {UUID} from "node:crypto";
@@ -8,11 +8,11 @@ import {UUID} from "node:crypto";
 export interface FilterTableProps {
     header?: string,
     parentOrg?: UUID,
-    onChoice?: (org: OrganizationBody) => void
+    onChoice?: (org: Organization) => void
 }
 
 export default function FilterHeaderTable(props: FilterTableProps) {
-    const [orgs, setOrgs] = useState<OrganizationBody[] | null>(null);
+    const [orgs, setOrgs] = useState<Organization[] | null>(null);
 
     useEffect(() => {
         (async function() {

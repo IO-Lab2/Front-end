@@ -1,10 +1,10 @@
 'use client'
 
-import {OrganizationBody} from "@/lib/API";
+import {Organization} from "@/lib/API";
 import {MouseEventHandler} from "react";
 
 export interface OrganizationCellProps {
-    org: OrganizationBody,
+    org: Organization,
     onClick?: MouseEventHandler<HTMLDivElement>
 }
 
