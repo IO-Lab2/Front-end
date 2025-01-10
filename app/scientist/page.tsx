@@ -2,7 +2,8 @@
 
 import {useRouter, useSearchParams,} from "next/navigation";
 import {useMemo, useState} from "react";
-import {fetchScientistInfo, Scientist} from "@/lib/API";
+import {fetchPublicationsByScientistID, fetchScientistInfo, Publication, Scientist} from "@/lib/API";
+import PublicationTable from "@/components/PublicationTable";
 
 export default function ScientistPage() {
     const searchParams = useSearchParams()
@@ -10,11 +11,14 @@ export default function ScientistPage() {
     const router = useRouter();
 
     const [scientist, setScientist] = useState<Scientist | null | undefined>(undefined)
+    const [publications, setPublications] = useState<Publication[]>([])
 
     useMemo(() => {
         if(scientistID !== null) {
             fetchScientistInfo(scientistID)
                 .then((newScientist) => { setScientist(newScientist) })
+            fetchPublicationsByScientistID(scientistID)
+                .then((publications) => { setPublications(publications ?? [])})
         } else {
             setScientist(null)
         }
@@ -72,27 +76,35 @@ export default function ScientistPage() {
                 </div>
             </div>
         </div>
-        <div className={`p-6 m-6 h-72 bg-white/50 flex rounded-2xl text-2xl text-gray-800/80 font-semibold`}>
-            <div className={`flex-1 flex flex-col`}>
-                <p className={`flex-1`}>
-                    <span>Punkty ministerialne:</span>
-                    &nbsp;
-                    <span>{scientist.bibliometrics.ministerial_score ?? 0}</span>
-                </p>
-                <p className={`flex-1`}>
-                    <span>h-index WoS:</span>
-                    &nbsp;
-                    <span>{scientist.bibliometrics.h_index_wos}</span>
-                </p>
-                <p className={`flex-1`}>
-                    <span>h-index Scopus:</span>
-                    &nbsp;
-                    <span>{scientist.bibliometrics.h_index_scopus}</span>
-                </p>
+        <div className={`p-6 m-6 bg-white/50 flex gap-4 rounded-2xl text-2xl text-gray-800/80 font-semibold`}>
+            <div className={`flex-1 flex ml-8 mr-8`}>
+                <div className={`flex-1`}>
+                    <p>
+                        <span>Punkty ministerialne:</span>
+                    </p>
+                    <p>
+                        <span>h-index WoS:</span>
+                    </p>
+                    <p>
+                        <span>h-index Scopus:</span>
+                    </p>
+                </div>
+                <div className={`flex-1 text-right`}>
+                    <p>
+                        <span>{scientist.bibliometrics.ministerial_score ?? 0}</span>
+                    </p>
+                    <p>
+                        <span>{scientist.bibliometrics.h_index_wos}</span>
+                    </p>
+                    <p>
+                        <span>{scientist.bibliometrics.h_index_scopus}</span>
+                    </p>
+                </div>
             </div>
-            <div className={`flex-1`}>
+            <div className={`flex-1 ml-8 mr-8`}>
                 <p className={`mb-2`}>Dyscypliny:</p>
             </div>
         </div>
+        <PublicationTable publications={publications}/>
     </div>
 }

@@ -425,8 +425,8 @@ export default function ViewPage() {
                     title={scientist.academic_title}
                     name={`${scientist.first_name} ${scientist.last_name}`}
                     researchAreas={scientist.research_areas ?? []}
-                    institute={"NYI (Institute)"}
-                    cathedra={"NYI (Cathedra)"}
+                    institute={""}
+                    cathedra={""}
                     selectedForComparison={compareInfo.scientists.has(scientist.id)}
                     onSelectForComparison={(select) => {
                         let modified: boolean

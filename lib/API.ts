@@ -82,6 +82,16 @@ export interface SearchQuery {
     yearScoreFilters?: YearScoreFilter[],
 }
 
+export interface Publication {
+    id: string,
+    impact_factor: number,
+    journal: string,
+    journal_type: string,
+    publication_date: string,
+    publisher: string,
+    title: string
+}
+
 export interface SearchResponse {
     count?: number,
     scientists?: Scientist[]
@@ -276,6 +286,24 @@ export async function fetchOrganizationsByScientistID(id: string): Promise<Organ
         }
     } catch(ex) {
         console.error(`Nie udało się pobrać informacji o organizacjach naukowca: ${ex}`)
+        return null
+    }
+}
+
+export async function fetchPublicationsByScientistID(id: string): Promise<Publication[] | null> {
+    try {
+        const publications = await fetch(`https://api.epickaporownywarkabazwiedzyuczelni.rocks/api/scientists_publications/${id}`, {
+            method: "GET",
+            cache: "force-cache"
+        }).then(res => res.json())
+
+        if(Array.isArray(publications)) {
+            return publications
+        } else {
+            return []
+        }
+    } catch(ex) {
+        console.error(`Nie udało się pobrać publikacji: ${ex}`)
         return null
     }
 }

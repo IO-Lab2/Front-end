@@ -39,8 +39,11 @@ export function ScientistCell(props: ScientistCellProps) {
                 </div>
             </div>
             <div className={`flex-1 flex flex-col font-[600]`}>
-                <div className={`w-full flex-1 flex flex-col gap-1`}>
-                    <p className={`text-2xl`}>
+                <div className={`w-full flex-1 flex flex-col gap-1`} >
+                    <p
+                        className={`text-2xl hover:underline hover:cursor-pointer`}
+                        onClick={() => { openScientistPage(router, props.scientistID) }}
+                    >
                         <span className={`text-gray-800/80`}>{props.title}</span> <span className={`text-3xl`}>{props.name}</span>
                     </p>
                     <p className={`text-xl text-gray-800/80`}>
