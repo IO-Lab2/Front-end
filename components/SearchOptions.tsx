@@ -1,11 +1,12 @@
 'use client'
 
+import {useState} from "react";
+
 export enum SortMethod {
-    Organization,
-    IFDescending,
-    IFAscending,
-    MinisterialPointsDescending,
-    MinisterialPointsAscending
+    Name,
+    PublicationCount,
+    IFScore,
+    MinisterialPoints
 }
 
 export interface SearchOptionsProps {
@@ -13,7 +14,8 @@ export interface SearchOptionsProps {
     selectedPage?: number,
     onPageChange?: (page: number) => void,
     onRefresh?: () => void,
-    onSortMethodChange?: (sortMethod: SortMethod) => void,
+    sortMethod?: SortMethod,
+    onSortMethodChange?: (sortMethod: SortMethod | undefined) => void,
     onFilterReset?: () => void,
     canResetFilters?: boolean,
     isSearchInProgress?: boolean,
@@ -30,9 +32,6 @@ export function SearchOptions(props: SearchOptionsProps) {
     const onCompare = props.onCompare
     const onResetCompare = props.onResetCompare
 
-    // TODO Sorting Options
-    // const onSortMethodChange = props.onSortMethodChange
-
     const buttonNoRound = `text-center content-center text-basetext font-bold text-xl`
     const buttonCommon = `rounded-2xl ${buttonNoRound}`
     const disabledButton = `cursor-default text-gray-300 opacity-40`
@@ -47,12 +46,14 @@ export function SearchOptions(props: SearchOptionsProps) {
     const enableButtons = !props.isSearchInProgress
     const enableCompare = enableButtons && compareCount > 1
 
+    const [sortingTabExpanded, setSortingTabExpanded] = useState(false)
+
     return (
         <div className={`flex flex-col gap-4`}>
             <div className={`flex gap-6`}>
                 <div
                     className={`w-60 h-12 ${buttonCommon} bg-black/80 ${enableButtons ? "cursor-pointer" : disabledButton}`}
-                    onClick={(enableButtons && onRefresh) ? () => onRefresh() : undefined}
+                    onClick={(enableButtons && onRefresh) ? () => { setSortingTabExpanded(false); onRefresh() } : undefined}
                 >
                     Odśwież Wyniki
                 </div>
@@ -63,8 +64,40 @@ export function SearchOptions(props: SearchOptionsProps) {
                     Porównaj ({compareCount ?? 0}{props.compareLimit ? `, max ${props.compareLimit}` : ""})
                 </div>
                 <div
-                    className={`w-60 h-12 ${buttonCommon} bg-black/80 ${enableButtons ? "cursor-pointer" : disabledButton}`}>
-                    Sortuj Według:
+                    className={`w-60 h-12 ${buttonNoRound} bg-black/80 ${enableButtons ? "cursor-pointer" : disabledButton} ${sortingTabExpanded && enableButtons ? "rounded-t-2xl" : "rounded-2xl"}`}
+                    onMouseLeave={() => setSortingTabExpanded(false)}
+                >
+                    <div
+                        className={`h-full flex justify-center items-center`}
+                        onClick={() => {
+                            setSortingTabExpanded(!sortingTabExpanded)
+                        }}
+                    >
+                        <p>Sortuj Według:</p>
+                    </div>
+                    <div
+                        className={
+                            `${sortingTabExpanded && enableButtons ? "" : "hidden"} absolute w-60 bg-white border-2
+                            border-black/80 text-black/80 bg-clip-padding rounded-b-2xl text-sm`
+                        }
+                    >
+                        <SortOption
+                            label={`Nazwisko / Imię`} selected={props.sortMethod === SortMethod.Name} method={SortMethod.Name}
+                            onChoice={props.onSortMethodChange}
+                        />
+                        <SortOption
+                            label={`Ilość Publikacji`} selected={props.sortMethod === SortMethod.PublicationCount} method={SortMethod.PublicationCount}
+                            onChoice={props.onSortMethodChange}
+                        />
+                        <SortOption
+                            label={`Punkty Ministerialne`} selected={props.sortMethod === SortMethod.MinisterialPoints} method={SortMethod.MinisterialPoints}
+                            onChoice={props.onSortMethodChange}
+                        />
+                        <SortOption
+                            label={`Współczynnik IF`} selected={props.sortMethod === SortMethod.IFScore} method={SortMethod.IFScore}
+                            onChoice={props.onSortMethodChange}
+                        />
+                    </div>
                 </div>
             </div>
 
@@ -122,3 +155,18 @@ export function SearchOptions(props: SearchOptionsProps) {
     )
 }
 
+interface SortOptionProps {
+    label: string,
+    selected: boolean,
+    method: SortMethod,
+    onChoice?: (sortMethod: SortMethod | undefined) => void,
+}
+
+function SortOption(props: SortOptionProps) {
+    return <div
+        className={`hover:bg-blue-400 p-0.5 last:rounded-b-2xl`}
+        onClick={() => { if(props.onChoice) { props.onChoice(props.selected ? undefined : props.method) } }}
+    >
+        {props.selected ? <b>&#8226; {props.label} &#8226;</b> : <span>{props.label}</span>}
+    </div>
+}

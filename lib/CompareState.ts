@@ -29,7 +29,7 @@ export class CompareState {
     }
 
     readFromCookies(cookies: { [key: string]: string | undefined}) {
-        const cookie = decodeURI(cookies[CompareState.COOKIE_COMPARE] as string).replaceAll("%2C", ",") // HACK: i hate webdev
+        const cookie = decodeURI(cookies[CompareState.COOKIE_COMPARE] as string).replaceAll("%2C", ",") ?? "" // HACK: i hate webdev
         console.log(`Cookie ${cookie}`)
         this.scientists = unpackCookie(cookie)
     }

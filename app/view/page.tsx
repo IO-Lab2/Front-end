@@ -3,13 +3,20 @@
 import {FilterCheckbox, FilterViewOption} from "@/components/FilterViewOption";
 import {ScientistCell} from "@/components/ScientistCell";
 import {
-    fetchGetOrganizationsFilter, fetchPublishers,
+    APIRange,
+    fetchGetOrganizationsFilter,
+    fetchJournalTypes,
     fetchMinisterialScoresRange,
+    fetchPositions,
     fetchPublicationCountRange,
-    Organization, Scientist, SearchResponse, fetchPositions, APIRange, fetchJournalTypes, fetchPublicationYears,
+    fetchPublicationYears,
+    fetchPublishers,
+    Organization,
+    Scientist,
+    SearchResponse,
 } from "@/lib/API";
 import {useEffect, useMemo, useRef, useState} from "react";
-import {SearchOptions} from "@/components/SearchOptions";
+import {SearchOptions, SortMethod} from "@/components/SearchOptions";
 import {FilterState} from "@/lib/FilterState";
 import {getCookies} from "cookies-next/client";
 import {FilterRange} from "@/components/FilterViewRange";
@@ -82,6 +89,8 @@ export default function ViewPage() {
 
     const [currentPage, setCurrentPage] = useState<number>(1)
     const [pageCount, setPageCount] = useState<number>(1)
+
+    const [sortMethod, setSortMethod] = useState<SortMethod | undefined>()
 
     const [nameFilterChanged, setNameFilterChanged] = useState<boolean>(true)
     const [uniFilterChanged, setUniFilterChanged] = useState<boolean>(true)
@@ -418,6 +427,18 @@ export default function ViewPage() {
         setScientistsChanged(false)
 
         return (scientists ?? [])
+            .toSorted((left, right) => {
+                switch(sortMethod) {
+                    case SortMethod.Name:
+                        return `${left.first_name} ${left.last_name}`.localeCompare(`${right.first_name} ${right.last_name}`)
+                    case SortMethod.PublicationCount:
+                        return (left.bibliometrics.publication_count ?? 0) - (right.bibliometrics.publication_count ?? 0)
+                    case SortMethod.MinisterialPoints:
+                        return (left.bibliometrics.ministerial_score ?? 0) - (right.bibliometrics.ministerial_score ?? 0)
+                    default:
+                        return 0
+                }
+            })
             .map((scientist) => {
                 return <ScientistCell
                     scientistID={scientist.id}
@@ -444,7 +465,7 @@ export default function ViewPage() {
                 />
             }
         )
-    }, [compareInfo, scientists, scientistsChanged])
+    }, [compareInfo, scientists, scientistsChanged, sortMethod])
 
     return <div className={`w-full h-full flex`}>
         <div className={`h-full max-h-full w-[30rem] flex-shrink-0 flex flex-col`}>
@@ -491,6 +512,8 @@ export default function ViewPage() {
                         filters.resetFilters()
                         setHasFilters(false)
                     }}
+                    sortMethod={sortMethod}
+                    onSortMethodChange={(sortMethod) => {setSortMethod(sortMethod)}}
                     selectedPage={currentPage}
                     pageCount={pageCount}
                     onPageChange={(page) => {
