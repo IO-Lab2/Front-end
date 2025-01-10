@@ -31,6 +31,10 @@ export default function ScientistPage() {
             ? <a className={`underline`} href={`mailto:${scientist.email}`}>{scientist.email}</a>
             : <span>brak</span>
 
+    const totalImpactFactor = publications.reduce((total, next) => {
+        return total + next.impact_factor
+    }, 0)
+
     return <div className={`w-full h-full`}>
         <div className={`p-12 w-full h-72 bg-white/50 flex gap-4`}>
             <div className={`w-60 flex-shrink-0 flex content-center justify-center`}>
@@ -76,35 +80,34 @@ export default function ScientistPage() {
                 </div>
             </div>
         </div>
-        <div className={`p-6 m-6 bg-white/50 flex gap-4 rounded-2xl text-2xl text-gray-800/80 font-semibold`}>
-            <div className={`flex-1 flex ml-8 mr-8`}>
+        <div className={`p-6 pl-12 pr-12 m-6 bg-white/50 flex gap-12 rounded-2xl text-2xl text-gray-800/80 font-semibold`}>
+            <div className={`flex-1 flex`}>
                 <div className={`flex-1`}>
-                    <p>
-                        <span>Punkty ministerialne:</span>
-                    </p>
-                    <p>
-                        <span>h-index WoS:</span>
-                    </p>
-                    <p>
-                        <span>h-index Scopus:</span>
-                    </p>
+                    <p>Punkty ministerialne:</p>
+                    <p>Współczynnik Impact Factor:</p>
+                    <p>h-index WoS:</p>
+                    <p>h-index Scopus:</p>
                 </div>
                 <div className={`flex-1 text-right`}>
-                    <p>
-                        <span>{scientist.bibliometrics.ministerial_score ?? 0}</span>
-                    </p>
-                    <p>
-                        <span>{scientist.bibliometrics.h_index_wos}</span>
-                    </p>
-                    <p>
-                        <span>{scientist.bibliometrics.h_index_scopus}</span>
-                    </p>
+                    <p>{scientist.bibliometrics.ministerial_score ?? 0}</p>
+                    <p>{totalImpactFactor.toFixed(1)}</p>
+                    <p>{scientist.bibliometrics.h_index_wos ?? 0}</p>
+                    <p>{scientist.bibliometrics.h_index_scopus ?? 0}</p>
                 </div>
             </div>
-            <div className={`flex-1 ml-8 mr-8`}>
-                <p className={`mb-2`}>Dyscypliny:</p>
+            <div className={`flex-1`}>
+                <p>Dyscypliny:</p>
+                <div className={`mt-1 text-lg underline text-bluetext capitalize`}>
+                    {
+                        (scientist.research_areas ?? [])
+                            .map((area, i) => {
+                                return <p key={i}>{area.name}</p>
+                            })
+                    }
+                </div>
             </div>
         </div>
+
         <PublicationTable publications={publications}/>
     </div>
 }

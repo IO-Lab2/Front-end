@@ -53,18 +53,19 @@ export default function ComparePage() {
     })
 
     return <div className={`w-full h-full`}>
-        <div className={`flex p-2 flex-wrap`}>
-            {scientistCards}
-        </div>
-        <div className={`flex justify-center mb-4`}>
+        <div className={`flex m-4 mb-0 text-2xl font-bold`}>
+            <div className={`bg-white/60 p-4 text-black/80 rounded-l-2xl flex-1`}>
+                Porównywanie {scientists?.length ?? 0} naukowców
+            </div>
             <div
-                className={
-                    `w-52 h-16 m-0 bg-black font-[600] text-2xl text-white text-center content-center cursor-pointer rounded-3xl`
-                }
+                className={`bg-black/80 p-4 rounded-r-2xl w-44 text-center text-basetext cursor-pointer`}
                 onClick={() => router.replace("/view")}
             >
                 {`<`} Powrót
             </div>
+        </div>
+        <div className={`flex p-2 flex-wrap`}>
+            {scientistCards}
         </div>
     </div>
 }

@@ -31,35 +31,11 @@ export default function ScientistCompareCard(props: ScientistCompareCardProps) {
             {
                 organizations
                     .sort((left, right) => {
-                        let lValue: number
-                        switch(left.type) {
-                            case "university":
-                                lValue = 1
-                                break
-                            case "institute":
-                                lValue = 2
-                                break
-                            default:
-                                lValue = 3
-                                break
-                        }
-
-                        let rValue: number
-                        switch(right.type) {
-                            case "university":
-                                rValue = 1
-                                break
-                            case "institute":
-                                rValue = 2
-                                break
-                            default:
-                                rValue = 3
-                                break
-                        }
-
+                        const lValue = orgOrderValue(left.type)
+                        const rValue = orgOrderValue(right.type)
                         return lValue - rValue
                     })
-                    .map(org => { return <p key={org.id}>{org.name}</p> })
+                    .map(org => { return <p key={org.id}>&#8226; {org.name}</p> })
             }
         </div>
         <div className={`p-4 text-lg text-bluetext bg-white/70 font-semibold rounded-b-2xl flex`}>
@@ -67,12 +43,29 @@ export default function ScientistCompareCard(props: ScientistCompareCardProps) {
                 <p>Punkty ministerialne:</p>
                 <p>Współczynnik IF:</p>
                 <p>Liczba Publikacji:</p>
+                <p>h-index WoS:</p>
+                <p>h-index Scopus:</p>
             </div>
             <div className={`flex-row-reverse text-right`}>
                 <p>{props.scientist.bibliometrics.ministerial_score ?? 0}</p>
                 <p>0</p>
                 <p>{props.scientist.bibliometrics.publication_count ?? 0}</p>
+                <p>{props.scientist.bibliometrics.h_index_wos}</p>
+                <p>{props.scientist.bibliometrics.h_index_scopus}</p>
             </div>
         </div>
     </div>
+}
+
+function orgOrderValue(org: string): number {
+    switch(org) {
+        case "university":
+            return 1
+        case "institute":
+            return 2
+        case "cathedra":
+            return 3
+        default:
+            return 4
+    }
 }

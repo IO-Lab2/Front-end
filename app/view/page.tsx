@@ -99,7 +99,6 @@ export default function ViewPage() {
     const [positionFilterChanged, setPositionFilterChanged] = useState<boolean>(true)
     const [publicationCountFilterChanged, setPublicationCountFilterChanged] = useState<boolean>(true)
     const [ministerialPointFilterChanged, setMinisterialPointFilterChanged] = useState<boolean>(true)
-    const [ifScoreFilterChanged, setIfScoreFilterChanged] = useState<boolean>(true)
     const [publishersFilterChanged, setPublishersFilterChanged] = useState<boolean>(true)
     const [journalFilterChanged, setJournalFilterChanged] = useState<boolean>(true)
     const [publicationYearFilterChanged, setPublicationYearFilterChanged] = useState<boolean>(true)
@@ -182,7 +181,6 @@ export default function ViewPage() {
             return <FilterCheckbox
                 key={uni.id}
                 label={uni.name}
-                count={0}
                 isChecked={filters.universities.has(decodeURI(uni.name))}
                 onChoice={(isChecked) => {
                     if (isChecked) {
@@ -210,7 +208,6 @@ export default function ViewPage() {
             return <FilterCheckbox
                 key={institute.id}
                 label={institute.name}
-                count={0}
                 isChecked={filters.institutes.has(decodeURI(institute.name))}
                 onChoice={(isChecked: boolean) => {
                     if (isChecked) {
@@ -238,7 +235,6 @@ export default function ViewPage() {
             return <FilterCheckbox
                 key={index}
                 label={cathedra.name}
-                count={0}
                 isChecked={filters.cathedras.has(decodeURI(cathedra.name))}
                 onChoice={(isChecked: boolean) => {
                     if (isChecked) {
@@ -266,7 +262,6 @@ export default function ViewPage() {
             return <FilterCheckbox
                 key={position}
                 label={position}
-                count={0}
                 isChecked={filters.positions.has(decodeURI(position)) }
                 onChoice={(isChecked) => {
                     if(isChecked) {
@@ -326,24 +321,6 @@ export default function ViewPage() {
         />
     }, [filters, ministerialPointFilterChanged, hasFilters, orgData])
 
-    const ifScorePointRange = useMemo(() => {
-        setIfScoreFilterChanged(false)
-
-        return <FilterRange
-            min={filters.ifScore.min}
-            max={filters.ifScore.max}
-            onChange={(min, max) => {
-                filters.ifScore.min = min || undefined
-                filters.ifScore.max = max || undefined
-
-                filters.syncIFScoreCookie()
-
-                if(!hasFilters) { setHasFilters(true) }
-                if(!ifScoreFilterChanged) { setIfScoreFilterChanged(true) }
-            }}
-        />
-    }, [filters, ifScoreFilterChanged, hasFilters])
-
     const publishersCheckboxes = useMemo(() => {
         setPublishersFilterChanged(false)
 
@@ -351,7 +328,6 @@ export default function ViewPage() {
             return <FilterCheckbox
                 key={publisher}
                 label={publisher}
-                count={0}
                 isChecked={filters.publishers.has(decodeURI(publisher)) }
                 onChoice={(isChecked) => {
                     if(isChecked) {
@@ -377,7 +353,6 @@ export default function ViewPage() {
             return <FilterCheckbox
                 key={journalType}
                 label={journalType}
-                count={0}
                 isChecked={filters.publicationTypes.has(decodeURI(journalType)) }
                 onChoice={(isChecked) => {
                     if(isChecked) {
@@ -404,7 +379,6 @@ export default function ViewPage() {
             return <FilterCheckbox
                 key={year}
                 label={year.toString()}
-                count={0}
                 isChecked={filters.publicationYears.has(year) }
                 onChoice={(isChecked) => {
                     if(isChecked) {
@@ -441,13 +415,8 @@ export default function ViewPage() {
             })
             .map((scientist) => {
                 return <ScientistCell
-                    scientistID={scientist.id}
                     key={scientist.id}
-                    title={scientist.academic_title}
-                    name={`${scientist.first_name} ${scientist.last_name}`}
-                    researchAreas={scientist.research_areas ?? []}
-                    institute={""}
-                    cathedra={""}
+                    scientist={scientist}
                     selectedForComparison={compareInfo.scientists.has(scientist.id)}
                     onSelectForComparison={(select) => {
                         let modified: boolean
@@ -476,7 +445,6 @@ export default function ViewPage() {
             <FilterViewOption header="Stanowisko">{positionCheckboxes}</FilterViewOption>
             <FilterViewOption header="Ilość Publikacji">{publicationCountRange}</FilterViewOption>
             <FilterViewOption header="Ilość Punktów Ministerialnych">{ministerialPointRange}</FilterViewOption>
-            <FilterViewOption header="Współczynnik IF">{ifScorePointRange}</FilterViewOption>
             <FilterViewOption header="Wydawca">{publishersCheckboxes}</FilterViewOption>
             <FilterViewOption header="Lata Wydawania Publikacji">{publicationYearCheckboxes}</FilterViewOption>
             <FilterViewOption header="Rodzaj Publikacji">{journalTypeCheckboxes}</FilterViewOption>

@@ -35,6 +35,6 @@ export class CompareState {
     }
 
     static readonly COOKIE_COMPARE: string = "compare"
-    static readonly LIMIT: number = 4
+    static readonly LIMIT: number = 8
 }
 

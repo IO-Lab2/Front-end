@@ -5,22 +5,22 @@ import {useState} from "react";
 export enum SortMethod {
     Name,
     PublicationCount,
-    IFScore,
     MinisterialPoints
 }
 
 export interface SearchOptionsProps {
     pageCount?: number,
     selectedPage?: number,
-    onPageChange?: (page: number) => void,
-    onRefresh?: () => void,
     sortMethod?: SortMethod,
-    onSortMethodChange?: (sortMethod: SortMethod | undefined) => void,
-    onFilterReset?: () => void,
     canResetFilters?: boolean,
     isSearchInProgress?: boolean,
     compareCount?: number,
     compareLimit?: number,
+
+    onPageChange?: (page: number) => void,
+    onRefresh?: () => void,
+    onSortMethodChange?: (sortMethod: SortMethod | undefined) => void,
+    onFilterReset?: () => void,
     onCompare?: () => void,
     onResetCompare?: () => void,
 }
@@ -91,10 +91,6 @@ export function SearchOptions(props: SearchOptionsProps) {
                         />
                         <SortOption
                             label={`Punkty Ministerialne`} selected={props.sortMethod === SortMethod.MinisterialPoints} method={SortMethod.MinisterialPoints}
-                            onChoice={props.onSortMethodChange}
-                        />
-                        <SortOption
-                            label={`Współczynnik IF`} selected={props.sortMethod === SortMethod.IFScore} method={SortMethod.IFScore}
                             onChoice={props.onSortMethodChange}
                         />
                     </div>

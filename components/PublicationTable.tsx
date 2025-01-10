@@ -13,7 +13,7 @@ export default function PublicationTable(props: PublicationTableProps) {
         </div>
         <div>
             {props.publications.map((publication) => {
-                const publicationYear = new Date(publication.publication_date).getFullYear()
+                const publicationYear = publication.publication_date ? new Date(publication.publication_date).getFullYear() : undefined
 
                 return <div
                     key={publication.id}
@@ -25,10 +25,14 @@ export default function PublicationTable(props: PublicationTableProps) {
                         <span className={`text-black/80 underline`}>
                             {publication.title}
                         </span>
-                        <span className={`text-bluetext ml-2 mr-2`}>&#8226;</span>
-                        <span className={`text-bluetext`}>
-                            {publicationYear}
-                        </span>
+                        {
+                            publicationYear
+                                ? <>
+                                    <span className={`text-bluetext ml-2 mr-2`}>&#8226;</span>
+                                    <span className={`text-bluetext`}>{publicationYear}</span>
+                                </>
+                                : null
+                        }
                     </p>
                     <p className={`text-lg font-semibold text-bluetext`}>
                         <span>{publication.journal}</span>
@@ -36,20 +40,23 @@ export default function PublicationTable(props: PublicationTableProps) {
                             publication.journal_type
                                 ? <>
                                     <span className={`ml-2 mr-2`}>&#8226;</span>
-                                    <span>{publication.journal_type}</span>
+                                    <span className={`capitalize`}>{publication.journal_type}</span>
                                 </>
                                 : null
                         }
                     </p>
-                    {
-                        publication.publisher
-                            ? (
-                                <p className={`text-lg text-black/80 font-semibold`}>
-                                    {publication.publisher}
-                                </p>
-                            )
-                            : null
-                    }
+                    <div className={`flex text-lg text-black/80 font-semibold`}>
+                        <p className={`flex-1`}>
+                            {
+                                publication.publisher
+                                    ? `Wydawca: ${publication.publisher ?? ""}`
+                                    : null
+                            }
+                        </p>
+                        <p className={`flex-1 text-right`}>
+                            Impact Factor: {publication.impact_factor ?? 0}
+                        </p>
+                    </div>
                 </div>
             })}
         </div>
