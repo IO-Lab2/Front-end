@@ -405,10 +405,16 @@ export default function ViewPage() {
                 switch(sortMethod) {
                     case SortMethod.Name:
                         return `${left.first_name} ${left.last_name}`.localeCompare(`${right.first_name} ${right.last_name}`)
+                    case SortMethod.NameDescending:
+                        return `${right.first_name} ${right.last_name}`.localeCompare(`${left.first_name} ${left.last_name}`)
                     case SortMethod.PublicationCount:
                         return (left.bibliometrics.publication_count ?? 0) - (right.bibliometrics.publication_count ?? 0)
+                    case SortMethod.PublicationCountDescending:
+                        return (right.bibliometrics.publication_count ?? 0) - (left.bibliometrics.publication_count ?? 0)
                     case SortMethod.MinisterialPoints:
                         return (left.bibliometrics.ministerial_score ?? 0) - (right.bibliometrics.ministerial_score ?? 0)
+                    case SortMethod.MinisterialPointsDescending:
+                        return (right.bibliometrics.ministerial_score ?? 0) - (left.bibliometrics.ministerial_score ?? 0)
                     default:
                         return 0
                 }

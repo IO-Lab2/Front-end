@@ -5,6 +5,7 @@ import {Organization, Scientist} from "@/lib/API";
 export interface ScientistCompareCardProps {
     scientist: Scientist,
     organizations?: Organization[],
+    ifScore?: number
 }
 
 export default function ScientistCompareCard(props: ScientistCompareCardProps) {
@@ -48,7 +49,7 @@ export default function ScientistCompareCard(props: ScientistCompareCardProps) {
             </div>
             <div className={`flex-row-reverse text-right`}>
                 <p>{props.scientist.bibliometrics.ministerial_score ?? 0}</p>
-                <p>0</p>
+                <p>{(props.ifScore ?? 0).toFixed(1)}</p>
                 <p>{props.scientist.bibliometrics.publication_count ?? 0}</p>
                 <p>{props.scientist.bibliometrics.h_index_wos}</p>
                 <p>{props.scientist.bibliometrics.h_index_scopus}</p>

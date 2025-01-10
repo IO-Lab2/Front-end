@@ -4,8 +4,11 @@ import {useState} from "react";
 
 export enum SortMethod {
     Name,
+    NameDescending,
     PublicationCount,
-    MinisterialPoints
+    PublicationCountDescending,
+    MinisterialPoints,
+    MinisterialPointsDescending
 }
 
 export interface SearchOptionsProps {
@@ -82,15 +85,27 @@ export function SearchOptions(props: SearchOptionsProps) {
                         }
                     >
                         <SortOption
-                            label={`Nazwisko / Imię`} selected={props.sortMethod === SortMethod.Name} method={SortMethod.Name}
+                            label={`Nazwisko / Imię (Rosnąco)`} selected={props.sortMethod === SortMethod.Name} method={SortMethod.Name}
                             onChoice={props.onSortMethodChange}
                         />
                         <SortOption
-                            label={`Ilość Publikacji`} selected={props.sortMethod === SortMethod.PublicationCount} method={SortMethod.PublicationCount}
+                            label={`Nazwisko / Imię (Malejąco)`} selected={props.sortMethod === SortMethod.NameDescending} method={SortMethod.NameDescending}
                             onChoice={props.onSortMethodChange}
                         />
                         <SortOption
-                            label={`Punkty Ministerialne`} selected={props.sortMethod === SortMethod.MinisterialPoints} method={SortMethod.MinisterialPoints}
+                            label={`Ilość Publikacji (Rosnąco)`} selected={props.sortMethod === SortMethod.PublicationCount} method={SortMethod.PublicationCount}
+                            onChoice={props.onSortMethodChange}
+                        />
+                        <SortOption
+                            label={`Ilość Publikacji (Malejąco)`} selected={props.sortMethod === SortMethod.PublicationCountDescending} method={SortMethod.PublicationCountDescending}
+                            onChoice={props.onSortMethodChange}
+                        />
+                        <SortOption
+                            label={`Punkty Ministerialne (Rosnąco)`} selected={props.sortMethod === SortMethod.MinisterialPoints} method={SortMethod.MinisterialPoints}
+                            onChoice={props.onSortMethodChange}
+                        />
+                        <SortOption
+                            label={`Punkty Ministerialne (Malejąco)`} selected={props.sortMethod === SortMethod.MinisterialPointsDescending} method={SortMethod.MinisterialPointsDescending}
                             onChoice={props.onSortMethodChange}
                         />
                     </div>

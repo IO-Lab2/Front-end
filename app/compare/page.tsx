@@ -3,12 +3,21 @@
 import {CompareState} from "@/lib/CompareState";
 import {getCookies} from "cookies-next/client";
 import {useEffect, useMemo, useState} from "react";
-import {fetchOrganizationsByScientistID, fetchScientistInfo, Organization, Scientist} from "@/lib/API";
+import {
+    fetchOrganizationsByScientistID,
+    fetchPublicationsByScientistID,
+    fetchScientistInfo,
+    Organization,
+    Scientist
+} from "@/lib/API";
 import ScientistCompareCard from "@/components/ScientistCompareCard";
 import {useRouter} from "next/navigation";
 
 interface ScientistOrgs {
     [key: string]: Organization[]
+}
+interface ScientistIFScores {
+    [key: string]: number
 }
 
 export default function ComparePage() {
@@ -23,11 +32,13 @@ export default function ComparePage() {
 
     const [scientists, setScientists] = useState<Scientist[] | null>(null)
     const [orgs, setOrgs] = useState<ScientistOrgs>({})
+    const [ifScores, setIfScores] = useState<ScientistIFScores>({})
 
     useEffect(() => {
         (async function() {
             const output: Scientist[] = []
             const outputOrgs: ScientistOrgs = {}
+            const outputIFScores: ScientistIFScores = {}
 
             for(const scientist of compareInfo.scientists) {
                 const id = decodeURI(scientist)
@@ -36,20 +47,30 @@ export default function ComparePage() {
 
                 const parsedScientist = await fetchScientistInfo(id)
                 const parsedOrgs = await fetchOrganizationsByScientistID(id)
+                const publications = await fetchPublicationsByScientistID(id)
 
                 if(parsedScientist) {
                     output.push(parsedScientist)
                     outputOrgs[id] = parsedOrgs ?? []
+                    outputIFScores[id] = (publications ?? []).reduce((total, next) => {
+                        return total + next.impact_factor
+                    }, 0)
                 }
             }
 
             setScientists(output)
             setOrgs(outputOrgs)
+            setIfScores(outputIFScores)
         })()
     }, [compareInfo])
 
     const scientistCards = (scientists ?? []).map((scientist) => {
-        return <ScientistCompareCard key={scientist.id} scientist={scientist} organizations={orgs[scientist.id] ?? []}/>
+        return <ScientistCompareCard
+            key={scientist.id}
+            scientist={scientist}
+            organizations={orgs[scientist.id] ?? []}
+            ifScore={ifScores[scientist.id] ?? 0}
+        />
     })
 
     return <div className={`w-full h-full`}>
