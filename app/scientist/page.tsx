@@ -1,10 +1,12 @@
 'use client'
 
 import {useRouter, useSearchParams,} from "next/navigation";
-import {useMemo, useState} from "react";
+import {useEffect, useMemo, useState} from "react";
 import {fetchPublicationsByScientistID, fetchScientistInfo, Publication, Scientist} from "@/lib/API";
 import PublicationTable from "@/components/PublicationTable";
 import MinisterialScoreTable from "@/components/MinisterialScoreTable";
+import {CompareState} from "@/lib/CompareState";
+import {getCookies} from "cookies-next/client";
 
 export default function ScientistPage() {
     const searchParams = useSearchParams()
@@ -13,6 +15,14 @@ export default function ScientistPage() {
 
     const [scientist, setScientist] = useState<Scientist | null | undefined>(undefined)
     const [publications, setPublications] = useState<Publication[]>([])
+
+    const compareInfo = useMemo(() => {
+        const state = new CompareState()
+        state.readFromCookies(getCookies() ?? {})
+        console.log("Reading comparison info from cookies...")
+
+        return state
+    }, [])
 
     useMemo(() => {
         if(scientistID !== null) {
@@ -25,6 +35,13 @@ export default function ScientistPage() {
         }
     }, [scientistID])
 
+    const [isBeingCompared, setIsBeingCompared] = useState<boolean>(false)
+    const disableCompare = compareInfo.scientists.size >= CompareState.LIMIT && !isBeingCompared
+
+    useEffect(() => {
+        setIsBeingCompared(scientist ? compareInfo.scientists.has(scientist.id) : false)
+    }, [compareInfo, scientist])
+
     if(!scientist) { return <></> } // FIXME display something when loading
 
     const emailLabel =
@@ -35,6 +52,7 @@ export default function ScientistPage() {
     const totalImpactFactor = publications.reduce((total, next) => {
         return total + next.impact_factor
     }, 0)
+
 
     return <div className={`w-full h-full`}>
         <div className={`p-12 w-full h-72 bg-white/50 flex gap-4`}>
@@ -75,9 +93,24 @@ export default function ScientistPage() {
                     />
                 </form>
                 <div
-                    className={`p-2 h-20 bg-black/80 rounded-xl text-center content-center text-basetext font-bold cursor-pointer`}
+                    className={`p-2 h-20 bg-black/80 rounded-xl text-center content-center text-basetext font-bold ${disableCompare ? "cursor-default opacity-20" : "cursor-pointer"}`}
+                    onClick={() => {
+                        if(!disableCompare) {
+                            if(isBeingCompared) {
+                                if(compareInfo.remove(scientist.id)) {
+                                    compareInfo.syncCookie()
+                                    setIsBeingCompared(false)
+                                }
+                            } else {
+                                if(compareInfo.add(scientist.id)) {
+                                    compareInfo.syncCookie()
+                                    setIsBeingCompared(true)
+                                }
+                            }
+                        }
+                    }}
                 >
-                    Dodaj do porównania &gt;
+                    { isBeingCompared ? `Usuń z porównywania` : `Dodaj do porównywania` }
                 </div>
             </div>
         </div>
