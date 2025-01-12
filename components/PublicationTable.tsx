@@ -7,7 +7,7 @@ export interface PublicationTableProps {
 }
 
 export default function PublicationTable(props: PublicationTableProps) {
-    return <div className={`p-6`}>
+    return <div>
         <div className={`p-4 bg-black/80 rounded-t-2xl text-basetext text-center text-2xl font-bold`}>
             Publikacje ({props.publications.length}):
         </div>

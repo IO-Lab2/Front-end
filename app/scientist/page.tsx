@@ -4,6 +4,7 @@ import {useRouter, useSearchParams,} from "next/navigation";
 import {useMemo, useState} from "react";
 import {fetchPublicationsByScientistID, fetchScientistInfo, Publication, Scientist} from "@/lib/API";
 import PublicationTable from "@/components/PublicationTable";
+import MinisterialScoreTable from "@/components/MinisterialScoreTable";
 
 export default function ScientistPage() {
     const searchParams = useSearchParams()
@@ -29,7 +30,7 @@ export default function ScientistPage() {
     const emailLabel =
         scientist.email
             ? <a className={`underline`} href={`mailto:${scientist.email}`}>{scientist.email}</a>
-            : <span>brak</span>
+            : <span>-</span>
 
     const totalImpactFactor = publications.reduce((total, next) => {
         return total + next.impact_factor
@@ -80,34 +81,42 @@ export default function ScientistPage() {
                 </div>
             </div>
         </div>
-        <div className={`p-6 pl-12 pr-12 m-6 bg-white/50 flex gap-12 rounded-2xl text-2xl text-gray-800/80 font-semibold`}>
-            <div className={`flex-1 flex`}>
+        <div className={`flex flex-col gap-6 p-6`}>
+            <div
+                className={`p-6 pl-12 pr-12 bg-white/50 flex gap-12 rounded-2xl text-2xl text-gray-800/80 font-semibold`}
+            >
+                <div className={`flex-1 flex`}>
+                    <div className={`flex-1`}>
+                        <p>Punkty ministerialne:</p>
+                        <p>Współczynnik Impact Factor:</p>
+                        <p>h-index WoS:</p>
+                        <p>h-index Scopus:</p>
+                    </div>
+                    <div className={`flex-1 text-right`}>
+                        <p>{scientist.bibliometrics.ministerial_score ?? 0}</p>
+                        <p>{totalImpactFactor.toFixed(1)}</p>
+                        <p>{scientist.bibliometrics.h_index_wos ?? 0}</p>
+                        <p>{scientist.bibliometrics.h_index_scopus ?? 0}</p>
+                    </div>
+                </div>
                 <div className={`flex-1`}>
-                    <p>Punkty ministerialne:</p>
-                    <p>Współczynnik Impact Factor:</p>
-                    <p>h-index WoS:</p>
-                    <p>h-index Scopus:</p>
-                </div>
-                <div className={`flex-1 text-right`}>
-                    <p>{scientist.bibliometrics.ministerial_score ?? 0}</p>
-                    <p>{totalImpactFactor.toFixed(1)}</p>
-                    <p>{scientist.bibliometrics.h_index_wos ?? 0}</p>
-                    <p>{scientist.bibliometrics.h_index_scopus ?? 0}</p>
-                </div>
-            </div>
-            <div className={`flex-1`}>
-                <p>Dyscypliny:</p>
-                <div className={`mt-1 text-lg underline text-bluetext capitalize`}>
-                    {
-                        (scientist.research_areas ?? [])
-                            .map((area, i) => {
-                                return <p key={i}>{area.name}</p>
-                            })
-                    }
+                    <p>Dyscypliny:</p>
+                    <div className={`mt-1 text-lg underline text-bluetext capitalize`}>
+                        {
+                            (scientist.research_areas ?? [])
+                                .map((area, i) => {
+                                    return <p key={i}>{area.name}</p>
+                                })
+                        }
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <PublicationTable publications={publications}/>
+            <MinisterialScoreTable
+                scores={scientist.publication_scores ?? []}
+                total={scientist.bibliometrics.ministerial_score ?? 0}/>
+            <PublicationTable
+                publications={publications}/>
+        </div>
     </div>
 }

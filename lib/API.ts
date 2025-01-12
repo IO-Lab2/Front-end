@@ -43,7 +43,7 @@ export interface Scientist {
      * - `score`: Total score for the publications.
      * - `year`: Year of the publication score.
      * */
-    publication_scores?: Array<{ score?: number, year?: string }>, // TODO
+    publication_scores?: PublicationScore[],
     /**
      * **(Optional)** Research areas of the scientist.
      * - `name`: Name of the research area.
@@ -105,6 +105,11 @@ export interface APIRange {
 export interface ResearchArea {
     id?: UUID,
     name?: string
+}
+
+export interface PublicationScore {
+    score?: number
+    year?: string
 }
 
 interface PublicationYear { publication_date?: string }
