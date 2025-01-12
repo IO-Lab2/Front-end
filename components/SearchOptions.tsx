@@ -3,12 +3,12 @@
 import {useState} from "react";
 
 export enum SortMethod {
-    Name,
-    NameDescending,
-    PublicationCount,
-    PublicationCountDescending,
-    MinisterialPoints,
-    MinisterialPointsDescending
+    Name = "Imie/Nazwisko (A-Z)",
+    NameDescending = "Imie/Nazwisko (Z-A)",
+    PublicationCount = "Publikacje (Rosnąco)",
+    PublicationCountDescending = "Publikacje (Malejąco)",
+    MinisterialPoints = "Punkty Ministerialne (Rosnąco)",
+    MinisterialPointsDescending = "Punkty Ministerialne (Malejąco)"
 }
 
 export interface SearchOptionsProps {
@@ -71,12 +71,17 @@ export function SearchOptions(props: SearchOptionsProps) {
                     onMouseLeave={() => setSortingTabExpanded(false)}
                 >
                     <div
-                        className={`h-full flex justify-center items-center`}
+                        className={`h-full flex flex-col justify-center items-center`}
                         onClick={() => {
                             setSortingTabExpanded(!sortingTabExpanded)
                         }}
                     >
                         <p>Sortuj Według:</p>
+                        <p className={`text-xs`}>
+                            {
+                                props.sortMethod
+                            }
+                        </p>
                     </div>
                     <div
                         className={
@@ -84,30 +89,17 @@ export function SearchOptions(props: SearchOptionsProps) {
                             border-black/80 text-black/80 bg-clip-padding rounded-b-2xl text-sm`
                         }
                     >
-                        <SortOption
-                            label={`Nazwisko / Imię (Rosnąco)`} selected={props.sortMethod === SortMethod.Name} method={SortMethod.Name}
-                            onChoice={props.onSortMethodChange}
-                        />
-                        <SortOption
-                            label={`Nazwisko / Imię (Malejąco)`} selected={props.sortMethod === SortMethod.NameDescending} method={SortMethod.NameDescending}
-                            onChoice={props.onSortMethodChange}
-                        />
-                        <SortOption
-                            label={`Ilość Publikacji (Rosnąco)`} selected={props.sortMethod === SortMethod.PublicationCount} method={SortMethod.PublicationCount}
-                            onChoice={props.onSortMethodChange}
-                        />
-                        <SortOption
-                            label={`Ilość Publikacji (Malejąco)`} selected={props.sortMethod === SortMethod.PublicationCountDescending} method={SortMethod.PublicationCountDescending}
-                            onChoice={props.onSortMethodChange}
-                        />
-                        <SortOption
-                            label={`Punkty Ministerialne (Rosnąco)`} selected={props.sortMethod === SortMethod.MinisterialPoints} method={SortMethod.MinisterialPoints}
-                            onChoice={props.onSortMethodChange}
-                        />
-                        <SortOption
-                            label={`Punkty Ministerialne (Malejąco)`} selected={props.sortMethod === SortMethod.MinisterialPointsDescending} method={SortMethod.MinisterialPointsDescending}
-                            onChoice={props.onSortMethodChange}
-                        />
+                        {
+                            Object.entries(SortMethod).map(([key, value]) => {
+                                return <SortOption
+                                    key={key}
+                                    label={value}
+                                    selected={props.sortMethod === value}
+                                    method={value}
+                                    onChoice={props.onSortMethodChange}
+                                />
+                            })
+                        }
                     </div>
                 </div>
             </div>
