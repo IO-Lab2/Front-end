@@ -29,7 +29,7 @@ export default function PublicationScoreDynamicFilter(props: PublicationScoreDyn
                             className={`flex odd:bg-white/80 even:bg-white/40`}
                             key={filter.year}
                         >
-                            <div className={`p-1 bg-black text-basetext`}>
+                            <div className={`p-1 bg-black text-basetext min-w-14 text-center`}>
                                 {filter.year}
                             </div>
 
