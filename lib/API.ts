@@ -389,11 +389,12 @@ export async function fetchSearch(query: SearchQuery): Promise<SearchResponse | 
     if(query.surname !== undefined) {
         queryParams.append("surname", query.surname)
     }
-
-    /*
-     * TODO figure out how do you even send objects in URL queries?
-     * if(query.yearScoreFilters !== undefined) {}
-     */
+    if(query.yearScoreFilters !== undefined && query.yearScoreFilters.length > 0) {
+        const json = query.yearScoreFilters.map((filter) => {
+            return `{year:${filter.year},min_score:${filter.minScore},max_score:${filter.maxScore}}`
+        })
+        queryParams.append("year_score_filters[]", json.join(","))
+    }
 
     try {
         return await fetch("https://api.epickaporownywarkabazwiedzyuczelni.rocks/api/search?" + queryParams, {

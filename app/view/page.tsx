@@ -23,6 +23,7 @@ import {FilterRange} from "@/components/FilterViewRange";
 import {FilterString} from "@/components/FilterViewString";
 import {CompareState} from "@/lib/CompareState";
 import {useRouter} from "next/navigation";
+import PublicationScoreDynamicFilter from "@/components/PublicationScoreDynamicFilter";
 
 class OrganizationData {
     constructor() {
@@ -304,21 +305,88 @@ export default function ViewPage() {
     const ministerialPointRange = useMemo(() => {
         setMinisterialPointFilterChanged(false)
 
-        return <FilterRange
-            defaultMin={orgData?.ministerialPoints.min}
-            defaultMax={orgData?.ministerialPoints.max}
-            min={filters.ministerialPoints.min}
-            max={filters.ministerialPoints.max}
-            onChange={(min, max) => {
-                filters.ministerialPoints.min = min || undefined
-                filters.ministerialPoints.max = max || undefined
+        return <div className={`flex flex-col gap-2`}>
+            <div>
+                <p className={`font-semibold p-1 pl-2 pr-2 bg-black/80 rounded-t-2xl text-basetext`}>Razem</p>
+                <div className={`border-l-2 border-r-2 border-b-2 p-1 border-black/80 rounded-b-2xl`}>
+                    <FilterRange
+                        defaultMin={orgData?.ministerialPoints.min}
+                        defaultMax={orgData?.ministerialPoints.max}
+                        min={filters.ministerialPoints.min}
+                        max={filters.ministerialPoints.max}
+                        onChange={(min, max) => {
+                            filters.ministerialPoints.min = min || undefined
+                            filters.ministerialPoints.max = max || undefined
 
-                filters.syncMinisterialPointsCookie()
+                            filters.syncMinisterialPointsCookie()
 
-                if(!hasFilters) { setHasFilters(true) }
-                if(!ministerialPointFilterChanged) { setMinisterialPointFilterChanged(true) }
-            }}
-        />
+                            if (!hasFilters) {
+                                setHasFilters(true)
+                            }
+                            if (!ministerialPointFilterChanged) {
+                                setMinisterialPointFilterChanged(true)
+                            }
+                        }}
+                    />
+                </div>
+            </div>
+            <PublicationScoreDynamicFilter
+                label="W Latach"
+                filters={filters.publicationYearFilters}
+                onAdded={(v) => {
+                    const existingIndex = filters.publicationYearFilters
+                        .findIndex((filter) => filter.year === v.year)
+
+                    if(existingIndex >= 0) {
+                        filters.publicationYearFilters[existingIndex] = {
+                            year: v.year,
+                            minScore: v.minScore,
+                            maxScore: v.maxScore
+                        }
+                    } else {
+                        filters.publicationYearFilters.push(v)
+                    }
+
+                    filters.syncYearScoreCookie()
+
+                    if(!hasFilters) {
+                        setHasFilters(true)
+                    }
+                    if(!ministerialPointFilterChanged) {
+                        setMinisterialPointFilterChanged(true)
+                    }
+                }}
+                onRemoved={(v) => {
+                    const index = filters.publicationYearFilters
+                        .findIndex((filter) => filter.year === v.year)
+
+                    if(index > -1) {
+                        filters.publicationYearFilters.splice(index, 1)
+
+                        filters.syncYearScoreCookie()
+
+                        if(!hasFilters) {
+                            setHasFilters(true)
+                        }
+                        if(!ministerialPointFilterChanged) {
+                            setMinisterialPointFilterChanged(true)
+                        }
+                    }
+                }}
+                onClear={() => {
+                    filters.publicationYearFilters = []
+
+                    filters.syncYearScoreCookie()
+
+                    if(!hasFilters) {
+                        setHasFilters(true)
+                    }
+                    if(!ministerialPointFilterChanged) {
+                        setMinisterialPointFilterChanged(true)
+                    }
+                }}
+            />
+        </div>
     }, [filters, ministerialPointFilterChanged, hasFilters, orgData])
 
     const publishersCheckboxes = useMemo(() => {
@@ -328,9 +396,9 @@ export default function ViewPage() {
             return <FilterCheckbox
                 key={publisher}
                 label={publisher}
-                isChecked={filters.publishers.has(decodeURI(publisher)) }
+                isChecked={filters.publishers.has(decodeURI(publisher))}
                 onChoice={(isChecked) => {
-                    if(isChecked) {
+                    if (isChecked) {
                         filters.publishers.add(publisher)
                         console.log(`Added publisher filter: ${publisher}`)
                     } else {
