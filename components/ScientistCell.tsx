@@ -1,7 +1,7 @@
 'use client'
 
 import {useContext, useMemo} from "react";
-import {useRouter, useSearchParams} from "next/navigation";
+import {useRouter} from "next/navigation";
 import {AppRouterInstance} from "next/dist/shared/lib/app-router-context.shared-runtime";
 import {Scientist} from "@/lib/API";
 import {ContrastState} from "@/components/Toolbar";

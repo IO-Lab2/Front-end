@@ -658,8 +658,9 @@ async function fetchInitialOrganizationData(): Promise<OrganizationData> {
     const publicationCountRange: APIRange = await fetchPublicationCountRange()
     const ministerialPointRange: APIRange = await fetchMinisterialScoresRange()
 
-    const publishers: string[] = await fetchPublishers()
-    const positions: string[] = await fetchPositions()
+    // HACK: API gives some empty strings for some reason. Just filter them out since you can't search for these anyways (?)
+    const publishers: string[] = (await fetchPublishers()).filter((x) => x != " " && x != "")
+    const positions: string[] = (await fetchPositions()).filter((x) => x != " " && x != "")
     const journalTypes: string[] = await fetchJournalTypes()
     const publicationYears: number[] = await fetchPublicationYears()
 
