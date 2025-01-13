@@ -29,7 +29,7 @@ export default function PublicationScoreDynamicFilter(props: PublicationScoreDyn
                             className={`flex odd:bg-white/80 even:bg-white/40`}
                             key={filter.year}
                         >
-                            <div className={`p-1 bg-black text-basetext min-w-14 text-center`}>
+                            <div className={`p-1 bg-black/80 text-basetext min-w-14 text-center`}>
                                 {filter.year}
                             </div>
 
@@ -37,13 +37,13 @@ export default function PublicationScoreDynamicFilter(props: PublicationScoreDyn
                                 <div className={`flex-1 flex`}>
                                     <span className={`p-1`}>Min:</span>
                                     <input
-                                        className={`flex-1 w-full m-1`}
+                                        className={`flex-1 w-full m-1 pl-1 pr-1`}
                                         type="number"
                                         min={0}
-                                        value={filter.minScore}
+                                        value={filter.minScore?.toString() ?? ""}
                                         onChange={(value) => {
                                             if(props.onAdded) {
-                                                const newMin = value.target.valueAsNumber
+                                                const newMin = value.target.valueAsNumber || 0
                                                 props.onAdded({
                                                     year: filter.year,
                                                     minScore: newMin,
@@ -56,13 +56,13 @@ export default function PublicationScoreDynamicFilter(props: PublicationScoreDyn
                                 <div className={`flex-1 flex`}>
                                     <span className={`p-1`}>Max:</span>
                                     <input
-                                        className={`flex-1 w-full m-1`}
+                                        className={`flex-1 w-full m-1 pl-1 pr-1`}
                                         type="number"
                                         min={0}
-                                        value={filter.maxScore}
+                                        value={filter.maxScore?.toString() ?? ""}
                                         onChange={(value) => {
                                             if(props.onAdded) {
-                                                const newMax = value.target.valueAsNumber
+                                                const newMax = value.target.valueAsNumber || 0
                                                 props.onAdded({
                                                     year: filter.year,
                                                     minScore: filter.minScore,
@@ -75,7 +75,7 @@ export default function PublicationScoreDynamicFilter(props: PublicationScoreDyn
                             </div>
 
                             <div
-                                className={`bg-black text-basetext content-center justify-center flex font-bold text-xl w-8 cursor-pointer`}
+                                className={`bg-black/80 text-basetext content-center justify-center flex font-bold text-xl w-8 cursor-pointer`}
                                 onClick={() => {
                                     if(props.onRemoved) { props.onRemoved(filter) }
                                 }}

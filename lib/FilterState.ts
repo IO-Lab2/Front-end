@@ -231,29 +231,6 @@ export class FilterState {
         }
     }
 
-    syncIFScoreCookie() {
-        if(this.ifScore.min !== undefined) {
-            setCookie(FilterState.COOKIE_IF_SCORE_MIN, this.ifScore.min, {
-                sameSite: "strict"
-            })
-        } else {
-            deleteCookie(FilterState.COOKIE_IF_SCORE_MIN, {
-                sameSite: "strict"
-            })
-        }
-
-        if(this.ifScore.max !== undefined) {
-            setCookie(FilterState.COOKIE_IF_SCORE_MAX, this.ifScore.max, {
-                sameSite: "strict"
-            })
-        } else {
-            deleteCookie(FilterState.COOKIE_IF_SCORE_MAX, {
-                sameSite: "strict"
-            })
-        }
-
-    }
-
     syncPublisherCookie() {
         setCookie(FilterState.COOKIE_PUBLISHERS, packCookieSet(this.publishers), {
             sameSite: "strict"

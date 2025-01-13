@@ -349,12 +349,8 @@ export default function ViewPage() {
 
                     filters.syncYearScoreCookie()
 
-                    if(!hasFilters) {
-                        setHasFilters(true)
-                    }
-                    if(!ministerialPointFilterChanged) {
-                        setMinisterialPointFilterChanged(true)
-                    }
+                    if(!hasFilters) { setHasFilters(true) }
+                    if(!ministerialPointFilterChanged) { setMinisterialPointFilterChanged(true) }
                 }}
                 onRemoved={(v) => {
                     const index = filters.publicationYearFilters
@@ -365,12 +361,8 @@ export default function ViewPage() {
 
                         filters.syncYearScoreCookie()
 
-                        if(!hasFilters) {
-                            setHasFilters(true)
-                        }
-                        if(!ministerialPointFilterChanged) {
-                            setMinisterialPointFilterChanged(true)
-                        }
+                        if(!hasFilters) { setHasFilters(true) }
+                        if(!ministerialPointFilterChanged) { setMinisterialPointFilterChanged(true) }
                     }
                 }}
                 onClear={() => {
@@ -378,12 +370,8 @@ export default function ViewPage() {
 
                     filters.syncYearScoreCookie()
 
-                    if(!hasFilters) {
-                        setHasFilters(true)
-                    }
-                    if(!ministerialPointFilterChanged) {
-                        setMinisterialPointFilterChanged(true)
-                    }
+                    if(!hasFilters) { setHasFilters(true) }
+                    if(!ministerialPointFilterChanged) { setMinisterialPointFilterChanged(true) }
                 }}
             />
         </div>

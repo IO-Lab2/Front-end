@@ -1,17 +1,21 @@
 export function unpackCookie<T>(cookie: string | undefined): Set<T> {
+    if(!cookie) return new Set<T>();
+
     try {
-        return new Set(JSON.parse(decodeURI(cookie ?? "[]") ?? "[]") as T[])
+        return new Set(JSON.parse(decodeURIComponent(cookie) ?? "[]") as T[])
     } catch(ex) {
-        console.log(ex)
+        console.error(`(${cookie}) ${ex}`)
         return new Set()
     }
 }
 
 export function unpackArrayCookie<T>(cookie: string | undefined): T[] {
+    if(!cookie) return []
+
     try {
-        return (JSON.parse(decodeURIComponent(cookie ?? "[]") ?? "[]") as T[])
+        return (JSON.parse(decodeURIComponent(cookie) ?? "[]") as T[])
     } catch(ex) {
-        console.log(ex)
+        console.error(`(${cookie}) ${ex}`)
         return []
     }
 }
