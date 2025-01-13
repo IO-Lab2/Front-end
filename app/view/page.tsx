@@ -22,8 +22,9 @@ import {getCookies} from "cookies-next/client";
 import {FilterRange} from "@/components/FilterViewRange";
 import {FilterString} from "@/components/FilterViewString";
 import {CompareState} from "@/lib/CompareState";
-import {useRouter} from "next/navigation";
+import {useRouter, useSearchParams} from "next/navigation";
 import PublicationScoreDynamicFilter from "@/components/PublicationScoreDynamicFilter";
+import Toolbar, {ContrastState} from "@/components/Toolbar";
 
 class OrganizationData {
     constructor() {
@@ -56,15 +57,18 @@ export default function ViewPage() {
     const perPageLimit = 25
     const compareLimit = CompareState.LIMIT
     const router = useRouter()
+    const query = useSearchParams()
 
-    const filters = useMemo(() => {
+    const highContrastMode = query.has("highContrast")
+
+    const [filters, setFilters] = useState<FilterState>(() => {
         const state = new FilterState()
         // read filters from cookies on first load
         state.readFromCookies(getCookies() ?? {})
         console.log("Reading filters from cookies...")
 
         return state
-    }, [])
+    })
 
     const compareInfo = useMemo(() => {
         const state = new CompareState()
@@ -107,17 +111,17 @@ export default function ViewPage() {
 
     // Only allows selecting a single organization type (unselects the rest)
     useMemo(() => {
-        if(usedOrg != UsedOrganization.university) {
+        if (usedOrg != UsedOrganization.university) {
             filters.universities.clear()
             setUniFilterChanged(true)
             filters.syncUniversityCookie()
         }
-        if(usedOrg != UsedOrganization.institute) {
+        if (usedOrg != UsedOrganization.institute) {
             filters.institutes.clear()
             setInstituteFilterChanged(true)
             filters.syncInstituteCookie()
         }
-        if(usedOrg != UsedOrganization.cathedra) {
+        if (usedOrg != UsedOrganization.cathedra) {
             filters.cathedras.clear()
             setCathedraFilterChanged(true)
             filters.syncCathedraCookie()
@@ -157,8 +161,11 @@ export default function ViewPage() {
                     filters.name = value.length > 0 ? value : undefined
 
                     filters.syncNameCookie()
-                    if(!hasFilters) { setHasFilters(true) }
-                    if(!nameFilterChanged) { setNameFilterChanged(true) }
+
+                    setHasFilters(true)
+                    if (!nameFilterChanged) {
+                        setNameFilterChanged(true)
+                    }
                 }}
             />
             <FilterString
@@ -168,12 +175,15 @@ export default function ViewPage() {
                     filters.surname = value.length > 0 ? value : undefined
 
                     filters.syncSurnameCookie()
-                    if(!hasFilters) { setHasFilters(true) }
-                    if(!nameFilterChanged) { setNameFilterChanged(true) }
+
+                    setHasFilters(true)
+                    if (!nameFilterChanged) {
+                        setNameFilterChanged(true)
+                    }
                 }}
             />
         </>
-    }, [filters, nameFilterChanged, hasFilters])
+    }, [filters, nameFilterChanged])
 
     const universityCheckboxes = useMemo(() => {
         setUniFilterChanged(false)
@@ -195,12 +205,14 @@ export default function ViewPage() {
                     setUsedOrg(UsedOrganization.university)
                     filters.syncUniversityCookie()
 
-                    if(!uniFilterChanged) { setUniFilterChanged(true) }
-                    if(!hasFilters) { setHasFilters(true) }
+                    setHasFilters(true)
+                    if (!uniFilterChanged) {
+                        setUniFilterChanged(true)
+                    }
                 }}
             />
         }) ?? []
-    }, [filters, uniFilterChanged, hasFilters, orgData])
+    }, [filters, uniFilterChanged, orgData])
 
     const instituteCheckboxes = useMemo(() => {
         setInstituteFilterChanged(false)
@@ -222,12 +234,14 @@ export default function ViewPage() {
                     setUsedOrg(UsedOrganization.institute)
                     filters.syncInstituteCookie()
 
-                    if(!instituteFilterChanged) { setInstituteFilterChanged(true) }
-                    if(!hasFilters) { setHasFilters(true) }
+                    setHasFilters(true)
+                    if (!instituteFilterChanged) {
+                        setInstituteFilterChanged(true)
+                    }
                 }}
             />
         }) ?? []
-    }, [filters, instituteFilterChanged, hasFilters, orgData])
+    }, [filters, instituteFilterChanged, orgData])
 
     const cathedraCheckboxes = useMemo(() => {
         setCathedraFilterChanged(false)
@@ -249,12 +263,14 @@ export default function ViewPage() {
                     setUsedOrg(UsedOrganization.cathedra)
                     filters.syncCathedraCookie()
 
-                    if(!hasFilters) { setHasFilters(true) }
-                    if(!cathedraFilterChanged) { setCathedraFilterChanged(true) }
+                    setHasFilters(true)
+                    if (!cathedraFilterChanged) {
+                        setCathedraFilterChanged(true)
+                    }
                 }}
             />
         }) ?? []
-    }, [filters, cathedraFilterChanged, hasFilters, orgData])
+    }, [filters, cathedraFilterChanged, orgData])
 
     const positionCheckboxes = useMemo(() => {
         setPositionFilterChanged(false)
@@ -263,9 +279,9 @@ export default function ViewPage() {
             return <FilterCheckbox
                 key={position}
                 label={position}
-                isChecked={filters.positions.has(decodeURI(position)) }
+                isChecked={filters.positions.has(decodeURI(position))}
                 onChoice={(isChecked) => {
-                    if(isChecked) {
+                    if (isChecked) {
                         filters.positions.add(position)
                         console.log(`Added position filter: ${position}`)
                     } else {
@@ -275,12 +291,14 @@ export default function ViewPage() {
 
                     filters.syncPositionCookie()
 
-                    if(!hasFilters) { setHasFilters(true) }
-                    if(!positionFilterChanged) { setPositionFilterChanged(true) }
+                    setHasFilters(true)
+                    if (!positionFilterChanged) {
+                        setPositionFilterChanged(true)
+                    }
                 }}
             />
         }) ?? []
-    }, [filters, positionFilterChanged, hasFilters, orgData])
+    }, [filters, positionFilterChanged, orgData])
 
     const publicationCountRange = useMemo(() => {
         setPublicationCountFilterChanged(false)
@@ -296,19 +314,22 @@ export default function ViewPage() {
 
                 filters.syncPublicationCountCookie()
 
-                if(!hasFilters) { setHasFilters(true) }
-                if(!publicationCountFilterChanged) { setPublicationCountFilterChanged(true) }
+                setHasFilters(true)
+                if (!publicationCountFilterChanged) {
+                    setPublicationCountFilterChanged(true)
+                }
             }}
         />
-    }, [filters, publicationCountFilterChanged, hasFilters, orgData])
+    }, [filters, publicationCountFilterChanged, orgData])
 
     const ministerialPointRange = useMemo(() => {
         setMinisterialPointFilterChanged(false)
 
         return <div className={`flex flex-col gap-2`}>
             <div>
-                <p className={`font-semibold p-1 pl-2 pr-2 bg-black/80 rounded-t-2xl text-basetext`}>Razem</p>
-                <div className={`border-l-2 border-r-2 border-b-2 p-1 border-black/80 rounded-b-2xl`}>
+                <p className={`font-semibold p-1 pl-2 pr-2 ${highContrastMode ? "bg-black text-white" : "bg-black/80 text-basetext"} rounded-t-2xl`}>Razem</p>
+                <div
+                    className={`border-l-2 border-r-2 border-b-2 p-1 ${highContrastMode ? "border-black" : "border-black/80"} rounded-b-2xl`}>
                     <FilterRange
                         defaultMin={orgData?.ministerialPoints.min}
                         defaultMax={orgData?.ministerialPoints.max}
@@ -320,9 +341,7 @@ export default function ViewPage() {
 
                             filters.syncMinisterialPointsCookie()
 
-                            if (!hasFilters) {
-                                setHasFilters(true)
-                            }
+                            setHasFilters(true)
                             if (!ministerialPointFilterChanged) {
                                 setMinisterialPointFilterChanged(true)
                             }
@@ -337,7 +356,7 @@ export default function ViewPage() {
                     const existingIndex = filters.publicationYearFilters
                         .findIndex((filter) => filter.year === v.year)
 
-                    if(existingIndex >= 0) {
+                    if (existingIndex >= 0) {
                         filters.publicationYearFilters[existingIndex] = {
                             year: v.year,
                             minScore: v.minScore,
@@ -349,20 +368,24 @@ export default function ViewPage() {
 
                     filters.syncYearScoreCookie()
 
-                    if(!hasFilters) { setHasFilters(true) }
-                    if(!ministerialPointFilterChanged) { setMinisterialPointFilterChanged(true) }
+                    setHasFilters(true)
+                    if (!ministerialPointFilterChanged) {
+                        setMinisterialPointFilterChanged(true)
+                    }
                 }}
                 onRemoved={(v) => {
                     const index = filters.publicationYearFilters
                         .findIndex((filter) => filter.year === v.year)
 
-                    if(index > -1) {
+                    if (index > -1) {
                         filters.publicationYearFilters.splice(index, 1)
 
                         filters.syncYearScoreCookie()
 
-                        if(!hasFilters) { setHasFilters(true) }
-                        if(!ministerialPointFilterChanged) { setMinisterialPointFilterChanged(true) }
+                        setHasFilters(true)
+                        if (!ministerialPointFilterChanged) {
+                            setMinisterialPointFilterChanged(true)
+                        }
                     }
                 }}
                 onClear={() => {
@@ -370,12 +393,14 @@ export default function ViewPage() {
 
                     filters.syncYearScoreCookie()
 
-                    if(!hasFilters) { setHasFilters(true) }
-                    if(!ministerialPointFilterChanged) { setMinisterialPointFilterChanged(true) }
+                    setHasFilters(true)
+                    if (!ministerialPointFilterChanged) {
+                        setMinisterialPointFilterChanged(true)
+                    }
                 }}
             />
         </div>
-    }, [filters, ministerialPointFilterChanged, hasFilters, orgData])
+    }, [highContrastMode, filters, ministerialPointFilterChanged, orgData])
 
     const publishersCheckboxes = useMemo(() => {
         setPublishersFilterChanged(false)
@@ -395,12 +420,15 @@ export default function ViewPage() {
                     }
 
                     filters.syncPublisherCookie()
-                    if(!hasFilters) { setHasFilters(true) }
-                    if(!publishersFilterChanged) { setPublishersFilterChanged(true) }
+
+                    setHasFilters(true)
+                    if (!publishersFilterChanged) {
+                        setPublishersFilterChanged(true)
+                    }
                 }}
             />
         }) ?? []
-    }, [filters, publishersFilterChanged, hasFilters, orgData])
+    }, [filters, publishersFilterChanged, orgData])
 
     const journalTypeCheckboxes = useMemo(() => {
         setJournalFilterChanged(false)
@@ -409,9 +437,9 @@ export default function ViewPage() {
             return <FilterCheckbox
                 key={journalType}
                 label={journalType}
-                isChecked={filters.publicationTypes.has(decodeURI(journalType)) }
+                isChecked={filters.publicationTypes.has(decodeURI(journalType))}
                 onChoice={(isChecked) => {
-                    if(isChecked) {
+                    if (isChecked) {
                         filters.publicationTypes.add(journalType)
                         console.log(`Added publication type filter: ${journalType}`)
                     } else {
@@ -420,12 +448,15 @@ export default function ViewPage() {
                     }
 
                     filters.syncPublicationTypeCookie()
-                    if(!hasFilters) { setHasFilters(true) }
-                    if(!journalFilterChanged) { setJournalFilterChanged(true) }
+
+                    setHasFilters(true)
+                    if (!journalFilterChanged) {
+                        setJournalFilterChanged(true)
+                    }
                 }}
             />
         }) ?? []
-    }, [filters, journalFilterChanged, hasFilters, orgData])
+    }, [filters, journalFilterChanged, orgData])
 
     // Shouldn't these be just a range?
     const publicationYearCheckboxes = useMemo(() => {
@@ -435,9 +466,9 @@ export default function ViewPage() {
             return <FilterCheckbox
                 key={year}
                 label={year.toString()}
-                isChecked={filters.publicationYears.has(year) }
+                isChecked={filters.publicationYears.has(year)}
                 onChoice={(isChecked) => {
-                    if(isChecked) {
+                    if (isChecked) {
                         filters.publicationYears.add(year)
                         console.log(`Added publication year filter: ${year}`)
                     } else {
@@ -446,19 +477,22 @@ export default function ViewPage() {
                     }
 
                     filters.syncPublicationYearCookie()
-                    if(!hasFilters) { setHasFilters(true) }
-                    if(!publicationYearFilterChanged) { setPublicationYearFilterChanged(true) }
+
+                    setHasFilters(true)
+                    if (!publicationYearFilterChanged) {
+                        setPublicationYearFilterChanged(true)
+                    }
                 }}
             />
         }) ?? []
-    }, [filters, publicationYearFilterChanged, hasFilters, orgData])
+    }, [filters, publicationYearFilterChanged, orgData])
 
     const scientistCells = useMemo(() => {
         setScientistsChanged(false)
 
         return (scientists ?? [])
             .toSorted((left, right) => {
-                switch(sortMethod) {
+                switch (sortMethod) {
                     case SortMethod.Name:
                         return `${left.first_name} ${left.last_name}`.localeCompare(`${right.first_name} ${right.last_name}`)
                     case SortMethod.NameDescending:
@@ -476,103 +510,128 @@ export default function ViewPage() {
                 }
             })
             .map((scientist) => {
-                return <ScientistCell
-                    key={scientist.id}
-                    scientist={scientist}
-                    selectedForComparison={compareInfo.scientists.has(scientist.id)}
-                    onSelectForComparison={(select) => {
-                        let modified: boolean
-                        if(select) {
-                            modified = compareInfo.add(scientist.id)
-                        } else {
-                            modified = compareInfo.remove(scientist.id)
-                        }
+                    return <ScientistCell
+                        key={scientist.id}
+                        scientist={scientist}
+                        selectedForComparison={compareInfo.scientists.has(scientist.id)}
+                        onSelectForComparison={(select) => {
+                            let modified: boolean
+                            if (select) {
+                                modified = compareInfo.add(scientist.id)
+                            } else {
+                                modified = compareInfo.remove(scientist.id)
+                            }
 
-                        if(modified) {
-                            compareInfo.syncCookie()
-                            if(!scientistsChanged) { setScientistsChanged(true) }
-                        }
-                    }}
-                />
-            }
-        )
+                            if (modified) {
+                                compareInfo.syncCookie()
+                                if (!scientistsChanged) {
+                                    setScientistsChanged(true)
+                                }
+                            }
+                        }}
+                    />
+                }
+            )
     }, [compareInfo, scientists, scientistsChanged, sortMethod])
 
-    return <div className={`w-full h-full flex`}>
-        <div className={`h-full max-h-full w-[30rem] flex-shrink-0 flex flex-col`}>
-            <FilterViewOption header="Naukowiec">{nameField}</FilterViewOption>
-            <FilterViewOption header="Uczelnia">{universityCheckboxes}</FilterViewOption>
-            <FilterViewOption header="Instytut">{instituteCheckboxes}</FilterViewOption>
-            <FilterViewOption header="Katedra">{cathedraCheckboxes}</FilterViewOption>
-            <FilterViewOption header="Stanowisko">{positionCheckboxes}</FilterViewOption>
-            <FilterViewOption header="Ilość Publikacji">{publicationCountRange}</FilterViewOption>
-            <FilterViewOption header="Ilość Punktów Ministerialnych">{ministerialPointRange}</FilterViewOption>
-            <FilterViewOption header="Wydawca">{publishersCheckboxes}</FilterViewOption>
-            <FilterViewOption header="Lata Wydawania Publikacji">{publicationYearCheckboxes}</FilterViewOption>
-            <FilterViewOption header="Rodzaj Publikacji">{journalTypeCheckboxes}</FilterViewOption>
+    return <Toolbar
+        highContrastMode={highContrastMode}
+        onToggleContrast={
+            () => {
+                const queryCopy = new URLSearchParams(query)
+                if (highContrastMode) {
+                    queryCopy.delete("highContrast")
+                } else {
+                    queryCopy.append("highContrast", "1")
+                }
+                router.replace("/view?" + queryCopy.toString())
+            }
+        }
+    >
+        <ContrastState.Provider value={highContrastMode}>
+            <div className={`flex min-h-full h-fit w-full`}>
+                <div className={`min-h-full w-[30rem] flex-shrink-0 flex flex-col`}>
+                    <FilterViewOption header="Naukowiec">{nameField}</FilterViewOption>
+                    <FilterViewOption header="Uczelnia">{universityCheckboxes}</FilterViewOption>
+                    <FilterViewOption header="Instytut">{instituteCheckboxes}</FilterViewOption>
+                    <FilterViewOption header="Katedra">{cathedraCheckboxes}</FilterViewOption>
+                    <FilterViewOption header="Stanowisko">{positionCheckboxes}</FilterViewOption>
+                    <FilterViewOption header="Ilość Publikacji">{publicationCountRange}</FilterViewOption>
+                    <FilterViewOption header="Ilość Punktów Ministerialnych">{ministerialPointRange}</FilterViewOption>
+                    <FilterViewOption header="Wydawca">{publishersCheckboxes}</FilterViewOption>
+                    <FilterViewOption header="Lata Wydawania Publikacji">{publicationYearCheckboxes}</FilterViewOption>
+                    <FilterViewOption header="Rodzaj Publikacji">{journalTypeCheckboxes}</FilterViewOption>
 
-            <div className={`bg-black/80 w-full flex-1`}></div>
-        </div>
-        <div className={`flex-1`}>
-            <div className={`pl-8 pr-8 p-6 w-full content-center flex flex-col gap-4`}>
-                <p className={`text-3xl font-[600]`}>{totalScientistCount !== null ? `Znaleziono ${totalScientistCount} wyników wyszukiwania` : `Odświeżam wyniki...`}</p>
-                <SearchOptions
-                    onRefresh={async () => {
-                        setScientists(null)
-                        setTotalScientistCount(null)
-                        previousFilters.current = filters.copy()
+                    <div className={`bg-black/80 w-full flex-1`}></div>
+                </div>
+                <div className={`flex-1`}>
+                    <div className={`pl-8 pr-8 p-6 w-full content-center flex flex-col gap-4`}>
+                        <p className={`text-3xl font-[600]`}>{totalScientistCount !== null ? `Znaleziono ${totalScientistCount} wyników wyszukiwania` : `Odświeżam wyniki...`}</p>
+                        <SearchOptions
+                            onRefresh={async () => {
+                                setScientists(null)
+                                setTotalScientistCount(null)
+                                previousFilters.current = filters.copy()
 
-                        const result: SearchResponse | null = await filters.search(perPageLimit)
+                                const result: SearchResponse | null = await filters.search(perPageLimit)
 
-                        if (result) {
-                            const count = result.count ?? 0
+                                if (result) {
+                                    const count = result.count ?? 0
 
-                            const pageCount = Math.ceil(count / perPageLimit)
-                            const selectedPage = pageCount == 0 ? 0 : 1
+                                    const pageCount = Math.ceil(count / perPageLimit)
+                                    const selectedPage = pageCount == 0 ? 0 : 1
 
-                            setScientists(result.scientists ?? [])
-                            setTotalScientistCount(count)
+                                    setScientists(result.scientists ?? [])
+                                    setTotalScientistCount(count)
 
-                            setPageCount(pageCount)
-                            setCurrentPage(selectedPage)
-                        }
-                    }}
-                    canResetFilters={hasFilters}
-                    onFilterReset={() => {
-                        filters.resetFilters()
-                        setHasFilters(false)
-                    }}
-                    sortMethod={sortMethod}
-                    onSortMethodChange={(sortMethod) => {setSortMethod(sortMethod)}}
-                    selectedPage={currentPage}
-                    pageCount={pageCount}
-                    onPageChange={(page) => {
-                        if(page != currentPage) {
-                            setCurrentPage(page)
-                            setScientists(null)
+                                    setPageCount(pageCount)
+                                    setCurrentPage(selectedPage)
+                                }
+                            }}
+                            canResetFilters={hasFilters}
+                            onFilterReset={() => {
+                                filters.resetFilters()
+                                setFilters(new FilterState())
+                                setHasFilters(false)
+                            }}
+                            sortMethod={sortMethod}
+                            onSortMethodChange={(sortMethod) => {
+                                setSortMethod(sortMethod)
+                            }}
+                            selectedPage={currentPage}
+                            pageCount={pageCount}
+                            onPageChange={(page) => {
+                                if (page != currentPage) {
+                                    setCurrentPage(page)
+                                    setScientists(null)
 
-                            previousFilters.current.search(perPageLimit, page)
-                                .then((searchResponse) => {
-                                    setScientists(searchResponse?.scientists ?? [])
-                                })
-                        }
-                    }}
-                    isSearchInProgress={scientists == null}
-                    compareCount={compareInfo.scientists.size}
-                    compareLimit={compareLimit}
-                    onCompare={() => { router.replace("/compare") }}
-                    onResetCompare={
-                        () => {
-                            compareInfo.scientists.clear()
-                            compareInfo.syncCookie()
-                            setScientistsChanged(true)
-                        }
-                    }
-                />
+                                    previousFilters.current.search(perPageLimit, page)
+                                        .then((searchResponse) => {
+                                            setScientists(searchResponse?.scientists ?? [])
+                                        })
+                                }
+                            }}
+                            isSearchInProgress={scientists == null}
+                            compareCount={compareInfo.scientists.size}
+                            compareLimit={compareLimit}
+                            onCompare={() => {
+                                const contrast = highContrastMode ? "?highContrast=1" : ""
+                                router.replace("/compare" + contrast)
+                            }}
+                            onResetCompare={
+                                () => {
+                                    compareInfo.scientists.clear()
+                                    compareInfo.syncCookie()
+                                    setScientistsChanged(true)
+                                }
+                            }
+                        />
+                    </div>
+                    {scientistCells}
+                </div>
             </div>
-            {scientistCells}
-        </div>
-    </div>
+        </ContrastState.Provider>
+    </Toolbar>
 }
 
 async function fetchInitialOrganizationData(): Promise<OrganizationData> {

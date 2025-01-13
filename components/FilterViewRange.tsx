@@ -1,5 +1,8 @@
 'use client'
 
+import {useContext} from "react";
+import {ContrastState} from "@/components/Toolbar";
+
 export interface FilterRangeProps {
     min?: number,
     max?: number,
@@ -10,6 +13,7 @@ export interface FilterRangeProps {
 
 export function FilterRange(props: FilterRangeProps) {
     const onChange = props.onChange
+    const highContrastMode = useContext(ContrastState)
 
     const min = props.min ? Math.max(props.min, props.defaultMin ?? Number.NEGATIVE_INFINITY) : undefined
     const max = props.max ? Math.min(props.max, props.defaultMax ?? Number.POSITIVE_INFINITY) : undefined
@@ -18,7 +22,7 @@ export function FilterRange(props: FilterRangeProps) {
         <div className={`font-[600]`}>
             <div className={`inline-block w-14 p-2 align-middle`}>Min:</div>
             <input
-                className={`align-middle p-1 rounded-xl min-w-64`}
+                className={`${highContrastMode ? "border border-black" : ""} align-middle p-1 rounded-xl min-w-64`}
                 type="number"
                 value={min ?? ""}
                 onChange={
@@ -33,7 +37,7 @@ export function FilterRange(props: FilterRangeProps) {
                 max={props.defaultMax}
             />
             <button
-                className={`bg-black/80 rounded-xl text-basetext ml-2 p-1 align-middle`}
+                className={`${highContrastMode ? "bg-black text-white" : "bg-black/80 text-basetext "} rounded-xl ml-2 p-1 align-middle`}
                 onClick={() => {
                     if(onChange) { onChange(undefined, max) }
                 }}
@@ -44,7 +48,7 @@ export function FilterRange(props: FilterRangeProps) {
         <div className={`font-[600]`}>
             <div className={`inline-block w-14 p-2 align-middle`}>Max:</div>
             <input
-                className={`align-middle p-1 rounded-xl min-w-64`}
+                className={`${highContrastMode ? "border border-black" : ""} align-middle p-1 rounded-xl min-w-64`}
                 type="number"
                 value={max ?? ""}
                 onChange={
@@ -59,7 +63,7 @@ export function FilterRange(props: FilterRangeProps) {
                 max={props.defaultMax}
             />
             <button
-                className={`bg-black/80 rounded-xl text-basetext ml-2 p-1 align-middle`}
+                className={`${highContrastMode ? "bg-black text-white" : "bg-black/80 text-basetext "} rounded-xl ml-2 p-1 align-middle`}
                 onClick={() => {
                     if(onChange) { onChange(min, undefined) }
                 }}

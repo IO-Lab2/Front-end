@@ -2,6 +2,8 @@
 
 import {Organization, Scientist} from "@/lib/API";
 import Link from "next/link";
+import {useContext} from "react";
+import {ContrastState} from "@/components/Toolbar";
 
 export interface ScientistMinMax {
     min?: number,
@@ -23,6 +25,8 @@ export interface ScientistCompareCardProps {
 export default function ScientistCompareCard(props: ScientistCompareCardProps) {
     const organizations = props.organizations ?? []
 
+    const highContrastMode = useContext(ContrastState)
+
     const highestHighlight = `pl-2 pr-2 bg-green-600 text-white rounded-xl`
     const lowestHighlight = `pl-2 pr-2 bg-red-600 text-white rounded-xl`
 
@@ -43,10 +47,10 @@ export default function ScientistCompareCard(props: ScientistCompareCardProps) {
     }
 
     return <div className={`flex-1 basis-1/3 box-context p-2`}>
-        <div className={`p-4 bg-black/80 rounded-t-xl text-3xl`}>
+        <div className={`p-4 ${highContrastMode ? "bg-black" : "bg-black/80"} rounded-t-xl text-3xl`}>
             <p className={`font-semibold`}>
                 <Link href={`/scientist?id=${props.scientist.id}`}>
-                    <span className={`text-basetext`}>
+                    <span className={highContrastMode ? `text-white/60` : `text-basetext`}>
                         {props.scientist.academic_title}
                     </span>
                     &nbsp;
@@ -55,13 +59,13 @@ export default function ScientistCompareCard(props: ScientistCompareCardProps) {
                     </span>
                 </Link>
             </p>
-            <p className={`text-basetext opacity-70 text-xl`}>
+            <p className={`${highContrastMode ? "text-white/90" : "text-basetext"} opacity-70 text-xl`}>
                 <span>{props.scientist.position}</span>
                 {props.scientist.position ? <span className={`ml-2 mr-2`}>&#8226;</span> : null}
                 <span>ID: {props.scientist.id}</span>
             </p>
         </div>
-        <div className={`pl-4 pr-4 pt-2 pb-2 text-lg text-bluetext bg-white/40 underline font-semibold`}>
+        <div className={`pl-4 pr-4 pt-2 pb-2 text-lg ${highContrastMode ? "text-black border-l border-r border-b border-black" : "text-bluetext"} bg-white/40 underline font-semibold`}>
             {
                 organizations
                     .sort((left, right) => {
@@ -72,7 +76,7 @@ export default function ScientistCompareCard(props: ScientistCompareCardProps) {
                     .map(org => { return <p key={org.id}>&#8226; {org.name}</p> })
             }
         </div>
-        <div className={`p-4 text-lg text-bluetext bg-white/70 font-semibold rounded-b-2xl flex`}>
+        <div className={`p-4 text-lg ${highContrastMode ? "text-black border-l border-b border-r border-black" : "text-bluetext"} bg-white/70 font-semibold rounded-b-2xl flex`}>
             <div className={`flex-1`}>
                 <p>Punkty ministerialne:</p>
                 <p>Współczynnik IF:</p>

@@ -1,7 +1,8 @@
 'use client'
 
 import {YearScoreFilter} from "@/lib/API";
-import {useState} from "react";
+import {useContext, useState} from "react";
+import {ContrastState} from "@/components/Toolbar";
 
 export interface PublicationScoreDynamicFilterProps {
     label?: string
@@ -13,14 +14,15 @@ export interface PublicationScoreDynamicFilterProps {
 
 export default function PublicationScoreDynamicFilter(props: PublicationScoreDynamicFilterProps) {
     const currentFilters = props.filters || [];
+    const highContrastMode = useContext(ContrastState)
 
     const currentYear = new Date().getFullYear()
     const [addFieldYear, setAddFieldYear] = useState<number>(currentYear)
 
     return <div>
-        <p className={`font-semibold p-1 pl-2 pr-2 bg-black/80 rounded-t-2xl text-basetext`}>{props.label ?? " "}</p>
+        <p className={`font-semibold p-1 pl-2 pr-2 ${highContrastMode ? "bg-black text-white" : "bg-black/80 text-basetext"} rounded-t-2xl`}>{props.label ?? " "}</p>
         <div className={
-            `border-l-2 border-r-2 border-b-2 p-1 border-black/80 rounded-b-2xl font-semibold`
+            `border-l-2 border-r-2 border-b-2 p-1 ${highContrastMode ? "border-black" : "border-black/80"} rounded-b-2xl font-semibold`
         }>
             <div className={`m-1 rounded-xl overflow-clip`}>
                 {
@@ -29,7 +31,7 @@ export default function PublicationScoreDynamicFilter(props: PublicationScoreDyn
                             className={`flex odd:bg-white/80 even:bg-white/40`}
                             key={filter.year}
                         >
-                            <div className={`p-1 bg-black/80 text-basetext min-w-14 text-center`}>
+                            <div className={`${highContrastMode ? "bg-black text-white" : "bg-black/80 text-basetext"} p-1 min-w-14 text-center`}>
                                 {filter.year}
                             </div>
 
@@ -37,7 +39,7 @@ export default function PublicationScoreDynamicFilter(props: PublicationScoreDyn
                                 <div className={`flex-1 flex`}>
                                     <span className={`p-1`}>Min:</span>
                                     <input
-                                        className={`flex-1 w-full m-1 pl-1 pr-1`}
+                                        className={`flex-1 w-full m-1 pl-1 pr-1 ${highContrastMode ? "border border-black" : ""}`}
                                         type="number"
                                         min={0}
                                         value={filter.minScore?.toString() ?? ""}
@@ -56,7 +58,7 @@ export default function PublicationScoreDynamicFilter(props: PublicationScoreDyn
                                 <div className={`flex-1 flex`}>
                                     <span className={`p-1`}>Max:</span>
                                     <input
-                                        className={`flex-1 w-full m-1 pl-1 pr-1`}
+                                        className={`flex-1 w-full m-1 pl-1 pr-1 ${highContrastMode ? "border border-black" : ""}`}
                                         type="number"
                                         min={0}
                                         value={filter.maxScore?.toString() ?? ""}
@@ -75,7 +77,7 @@ export default function PublicationScoreDynamicFilter(props: PublicationScoreDyn
                             </div>
 
                             <div
-                                className={`bg-black/80 text-basetext content-center justify-center flex font-bold text-xl w-8 cursor-pointer`}
+                                className={`${highContrastMode ? "bg-black text-white" : "bg-black/80 text-basetext"} content-center justify-center flex font-bold text-xl w-8 cursor-pointer`}
                                 onClick={() => {
                                     if(props.onRemoved) { props.onRemoved(filter) }
                                 }}
@@ -91,7 +93,7 @@ export default function PublicationScoreDynamicFilter(props: PublicationScoreDyn
                 <div className={`flex-1`}></div>
 
                 <div
-                    className={`bg-black/80 text-basetext p-1 mr-2 content-center font-semibold rounded-xl text-center cursor-pointer`}
+                    className={`${highContrastMode ? "bg-black text-white" : "bg-black/80 text-basetext"} p-1 mr-2 content-center font-semibold rounded-xl text-center cursor-pointer`}
                     onClick={() => {
                         if(props.onClear) { props.onClear() }
                     }}
@@ -100,7 +102,7 @@ export default function PublicationScoreDynamicFilter(props: PublicationScoreDyn
                 </div>
 
                 <input
-                    className={`bg-white rounded-l-xl w-20 pl-2 pr-2`}
+                    className={`${highContrastMode ? "border border-black" : ""} bg-white rounded-l-xl w-20 pl-2 pr-2`}
                     type="number"
                     min={1970}
                     max={currentYear}
@@ -113,7 +115,7 @@ export default function PublicationScoreDynamicFilter(props: PublicationScoreDyn
                 />
 
                 <div
-                    className={`bg-black/80 text-basetext w-8 text-xl font-bold rounded-r-xl content-center text-center cursor-pointer`}
+                    className={`${highContrastMode ? "bg-black text-white" : "bg-black/80 text-basetext"} w-8 text-xl font-bold rounded-r-xl content-center text-center cursor-pointer`}
                     onClick={() => {
                         if(addFieldYear && props.onAdded) {
                             props.onAdded(

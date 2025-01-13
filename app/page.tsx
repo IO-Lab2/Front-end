@@ -1,21 +1,24 @@
 'use client'
 
-// FIXME: Layout breaks on small displays, fonts and contents need to be resized and probably a min-size needs to be set
-
 import FilterHeaderTable from "@/components/FilterHeaderTable";
 import SkipFilterButton from "@/components/SkipFilterButton";
 import {JSX, useState} from "react";
-import {useRouter} from "next/navigation";
+import {useRouter, useSearchParams} from "next/navigation";
 import {setCookie} from "cookies-next/client";
 import {FilterState} from "@/lib/FilterState";
 import {UUID} from "node:crypto";
 import {Organization} from "@/lib/API";
+import Toolbar from "@/components/Toolbar";
 
 export default function Home() {
     const router = useRouter()
+    const query = useSearchParams()
+
     const [universityChoice, setUniversityChoice] = useState<UUID | null>(null);
 
     let pageContents: JSX.Element
+
+    const highContrastMode = query.has("highContrast")
 
     if (universityChoice == null) {
         pageContents = <>
@@ -53,20 +56,38 @@ export default function Home() {
                     setCookie(FilterState.COOKIE_INSTITUTES, JSON.stringify([org.name]), {
                         sameSite: "strict"
                     })
-                    router.push("/view")
+
+                    const contrast = highContrastMode ? "?highContrast=1" : ""
+                    router.push("/view" + contrast)
                 }}
             />
         </>
     }
 
     return (
-        <div className={`w-4/6 h-fit m-auto`}>
-            <div className={`mt-10 mb-10`}>
-                {pageContents}
-                <SkipFilterButton onClick={() => {
-                    router.push("/view")
-                }} />
+        <Toolbar
+            highContrastMode={highContrastMode}
+            onToggleContrast={
+                () => {
+                    const queryCopy = new URLSearchParams(query)
+                    if(highContrastMode) {
+                        queryCopy.delete("highContrast")
+                    } else {
+                        queryCopy.append("highContrast", "1")
+                    }
+                    router.replace("?" + queryCopy.toString())
+                }
+            }
+        >
+            <div className={`w-4/6 h-fit m-auto`}>
+                <div className={`mt-10 mb-10`}>
+                    {pageContents}
+                    <SkipFilterButton onClick={() => {
+                        const contrast = highContrastMode ? "?highContrast=1" : ""
+                        router.push("/view" + contrast)
+                    }}/>
+                </div>
             </div>
-        </div>
+        </Toolbar>
     );
 }

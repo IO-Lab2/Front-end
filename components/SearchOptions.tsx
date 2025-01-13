@@ -1,6 +1,7 @@
 'use client'
 
-import {useState} from "react";
+import {useContext, useState} from "react";
+import {ContrastState} from "@/components/Toolbar";
 
 export enum SortMethod {
     Name = "Imie/Nazwisko (A-Z)",
@@ -35,7 +36,9 @@ export function SearchOptions(props: SearchOptionsProps) {
     const onCompare = props.onCompare
     const onResetCompare = props.onResetCompare
 
-    const buttonNoRound = `text-center content-center text-basetext font-bold text-xl`
+    const highContrastMode = useContext(ContrastState)
+
+    const buttonNoRound = `text-center content-center ${highContrastMode ? "text-white" : "text-basetext"} font-bold text-xl`
     const buttonCommon = `rounded-2xl ${buttonNoRound}`
     const disabledButton = `cursor-default text-gray-300 opacity-40`
 
