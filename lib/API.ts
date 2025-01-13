@@ -43,7 +43,7 @@ export interface Scientist {
      * - `score`: Total score for the publications.
      * - `year`: Year of the publication score.
      * */
-    publication_scores?: Array<{ score?: number, year?: string }>, // TODO
+    publication_scores?: PublicationScore[],
     /**
      * **(Optional)** Research areas of the scientist.
      * - `name`: Name of the research area.
@@ -82,6 +82,16 @@ export interface SearchQuery {
     yearScoreFilters?: YearScoreFilter[],
 }
 
+export interface Publication {
+    id: string,
+    impact_factor: number,
+    journal: string,
+    journal_type: string,
+    publication_date: string,
+    publisher: string,
+    title: string
+}
+
 export interface SearchResponse {
     count?: number,
     scientists?: Scientist[]
@@ -95,6 +105,11 @@ export interface APIRange {
 export interface ResearchArea {
     id?: UUID,
     name?: string
+}
+
+export interface PublicationScore {
+    score?: number
+    year?: string
 }
 
 interface PublicationYear { publication_date?: string }
@@ -280,19 +295,31 @@ export async function fetchOrganizationsByScientistID(id: string): Promise<Organ
     }
 }
 
+export async function fetchPublicationsByScientistID(id: string): Promise<Publication[] | null> {
+    try {
+        const publications = await fetch(`https://api.epickaporownywarkabazwiedzyuczelni.rocks/api/scientists_publications/${id}`, {
+            method: "GET",
+            cache: "force-cache"
+        }).then(res => res.json())
+
+        if(Array.isArray(publications)) {
+            return publications
+        } else {
+            return []
+        }
+    } catch(ex) {
+        console.error(`Nie udało się pobrać publikacji: ${ex}`)
+        return null
+    }
+}
+
 export async function fetchSearch(query: SearchQuery): Promise<SearchResponse | null> {
     const queryParams = new URLSearchParams()
 
     if(query.academicTitles !== undefined && query.academicTitles.length > 0) {
-        // for(const title of query.academicTitles) {
-        //     queryParams.append("academic_titles[]", title)
-        // }
         queryParams.append("academic_titles[]", query.academicTitles.join(","))
     }
     if(query.journalTypes !== undefined && query.journalTypes.length > 0) {
-        // for(const journal of query.journalTypes) {
-        //     queryParams.append("journal_types[]", journal)
-        // }
         queryParams.append("journal_types[]", query.journalTypes.join(","))
     }
     if(query.limit !== undefined) {
@@ -308,23 +335,12 @@ export async function fetchSearch(query: SearchQuery): Promise<SearchResponse | 
         queryParams.append("name", query.name)
     }
     if(query.organizations !== undefined && query.organizations.length > 0) {
-        // for(const organization of query.organizations) {
-        //     if(organization != "") {
-        //         queryParams.append("organizations[]", organization)
-        //     }
-        // }
         queryParams.append("organizations[]", query.organizations.join(","))
     }
     if(query.page !== undefined) {
         queryParams.append("page", query.page.toString())
     }
     if(query.positions !== undefined && query.positions.length > 0) {
-        // for(const position of query.positions) {
-        //     if(position != "") {
-        //         queryParams.append("positions[]", position)
-        //     }
-        // }
-
         queryParams.append("positions[]", query.positions.join(","))
     }
     if(query.publicationsMax !== undefined) {
@@ -334,33 +350,23 @@ export async function fetchSearch(query: SearchQuery): Promise<SearchResponse | 
         queryParams.append("publications_min", query.publicationsMin.toString())
     }
     if(query.publicationYears !== undefined && query.publicationYears.length > 0) {
-        // for(const year of query.publicationYears) {
-        //     queryParams.append("publications_years[]", year.toString()) // FIXME doesn't work?
-        // }
         queryParams.append("publications_years[]", query.publicationYears.join(","))
     }
     if(query.publishers !== undefined && query.publishers.length > 0) {
-        // for(const publisher of query.publishers) {
-        //     queryParams.append("publishers[]", publisher.toString())
-        // }
         queryParams.append("publishers[]", query.publishers.join(","))
     }
     if(query.researchAreas !== undefined && query.researchAreas.length > 0) {
-        // for(const area of query.researchAreas) {
-        //     if(area != "") {
-        //         queryParams.append("research_areas[]", area)
-        //     }
-        // }
         queryParams.append("research_areas[]", query.researchAreas.join(","))
     }
     if(query.surname !== undefined) {
         queryParams.append("surname", query.surname)
     }
-
-    /*
-     * TODO figure out how do you even send objects in URL queries?
-     * if(query.yearScoreFilters !== undefined) {}
-     */
+    if(query.yearScoreFilters !== undefined && query.yearScoreFilters.length > 0) {
+        const json = query.yearScoreFilters.map((filter) => {
+            return `${filter.year}:${filter.minScore}-${filter.maxScore}`
+        })
+        queryParams.append("year_score_filter[]", json.join(","))
+    }
 
     try {
         return await fetch("https://api.epickaporownywarkabazwiedzyuczelni.rocks/api/search?" + queryParams, {
