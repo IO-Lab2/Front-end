@@ -31,7 +31,7 @@ export function ScientistCell(props: ScientistCellProps) {
     const onSelectForComparison = props.onSelectForComparison
 
     return (
-        <div className={`p-12 w-full h-72 even:bg-white/30 flex gap-4 ${highContrastMode ? "border-2 border-black": ""}`}>
+        <div className={`p-12 w-full h-72 even:bg-white/30 flex gap-4 ${highContrastMode ? "border-t-2 border-l-2 border-r-2 last:border-b-2 border-black": ""}`}>
             <div className={`w-60 flex-shrink-0 flex content-center justify-center`}>
                 <div
                     className={`m-auto h-full aspect-square cursor-pointer`}

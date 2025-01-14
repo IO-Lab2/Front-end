@@ -8,7 +8,7 @@ import {setCookie} from "cookies-next/client";
 import {FilterState} from "@/lib/FilterState";
 import {UUID} from "node:crypto";
 import {Organization} from "@/lib/API";
-import Toolbar from "@/components/Toolbar";
+import Toolbar, {ContrastState} from "@/components/Toolbar";
 
 export default function Home() {
     const router = useRouter()
@@ -90,11 +90,13 @@ export default function Home() {
         >
             <div className={`w-4/6 h-fit m-auto`}>
                 <div className={`mt-10 mb-10`}>
-                    {pageContents}
-                    <SkipFilterButton onClick={() => {
-                        const contrast = highContrastMode ? "?highContrast=1" : ""
-                        router.push("/view" + contrast)
-                    }}/>
+                    <ContrastState.Provider value={highContrastMode}>
+                        {pageContents}
+                        <SkipFilterButton onClick={() => {
+                            const contrast = highContrastMode ? "?highContrast=1" : ""
+                            router.push("/view" + contrast)
+                        }}/>
+                    </ContrastState.Provider>
                 </div>
             </div>
         </Toolbar>
