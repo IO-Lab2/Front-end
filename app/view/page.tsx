@@ -153,6 +153,7 @@ export default function ViewPage() {
 
             setUsedOrg(initialUsedOrganization)
             previousFilters.current = filters.copy()
+            setHasFilters(filters.hasFilters())
         })()
     }, [])
 
