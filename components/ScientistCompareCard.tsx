@@ -37,10 +37,10 @@ export default function ScientistCompareCard(props: ScientistCompareCardProps) {
     const hIndexScoreRange = props.hIndexScoreRange ?? {}
 
     function highlight(range: ScientistMinMax, value: number | undefined): string {
-        if((value ?? 0) <= (range.min ?? 0)) {
-            return lowestHighlight
-        } else if((value ?? 0) >= (range.max ?? 0)) {
+        if((value ?? 0) >= (range.max ?? 0)) {
             return highestHighlight
+        } else if((value ?? 0) <= (range.min ?? 0)) {
+            return lowestHighlight
         } else {
             return ""
         }

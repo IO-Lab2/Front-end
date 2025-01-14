@@ -61,15 +61,11 @@ export default function ViewPage() {
     const query = useSearchParams()
 
     const highContrastMode = query.has("highContrast")
+    const [filters, setFilters] = useState<FilterState>(new FilterState())
 
-    const [filters, setFilters] = useState<FilterState>(() => {
-        const state = new FilterState()
-        // read filters from cookies on first load
-        state.readFromCookies(getCookies() ?? {})
-        console.log("Reading filters from cookies...")
-
-        return state
-    })
+    useEffect(() => {
+        console.log(`Setting filters: ${filters}`)
+    }, [filters])
 
     const compareInfo = useMemo(() => {
         const state = new CompareState()
@@ -81,16 +77,9 @@ export default function ViewPage() {
 
     const [orgData, setOrgData] = useState<OrganizationData | null>(null);
     const [scientists, setScientists] = useState<Scientist[] | null>(null)
-    const [hasFilters, setHasFilters] = useState<boolean>(filters.hasFilters())
+    const [hasFilters, setHasFilters] = useState<boolean>(false)
 
-    const initialUsedOrganization =
-        filters.cathedras.size > 0
-            ? UsedOrganization.cathedra
-            : filters.institutes.size > 0
-                ? UsedOrganization.institute
-                : UsedOrganization.university
-
-    const [usedOrg, setUsedOrg] = useState<UsedOrganization>(initialUsedOrganization)
+    const [usedOrg, setUsedOrg] = useState<UsedOrganization | undefined>()
     const [totalScientistCount, setTotalScientistCount] = useState<number | null>(null)
 
     const [currentPage, setCurrentPage] = useState<number>(1)
@@ -111,25 +100,33 @@ export default function ViewPage() {
 
     // Only allows selecting a single organization type (unselects the rest)
     useMemo(() => {
-        if (usedOrg != UsedOrganization.university) {
-            filters.universities.clear()
-            setUniFilterChanged(true)
-            filters.syncUniversityCookie()
-        }
-        if (usedOrg != UsedOrganization.institute) {
-            filters.institutes.clear()
-            setInstituteFilterChanged(true)
-            filters.syncInstituteCookie()
-        }
-        if (usedOrg != UsedOrganization.cathedra) {
-            filters.cathedras.clear()
-            setCathedraFilterChanged(true)
-            filters.syncCathedraCookie()
+        if(usedOrg !== undefined) {
+            if (usedOrg != UsedOrganization.university) {
+                filters.universities.clear()
+                setUniFilterChanged(true)
+                filters.syncUniversityCookie()
+            }
+            if (usedOrg != UsedOrganization.institute) {
+                filters.institutes.clear()
+                setInstituteFilterChanged(true)
+                filters.syncInstituteCookie()
+            }
+            if (usedOrg != UsedOrganization.cathedra) {
+                filters.cathedras.clear()
+                setCathedraFilterChanged(true)
+                filters.syncCathedraCookie()
+            }
         }
     }, [filters, usedOrg])
 
+    const previousFilters = useRef(filters.copy())
     useEffect(() => {
         (async function () {
+            const filters = new FilterState()
+
+            filters.readFromCookies(getCookies() ?? {})
+            console.log("Reading filters from cookies...")
+
             const fetchedOrgData = await fetchInitialOrganizationData()
             const searchResponse: SearchResponse | null = await filters.search(perPageLimit)
 
@@ -142,13 +139,23 @@ export default function ViewPage() {
             setPageCount(pageCount)
             setCurrentPage(selectedPage)
 
+            setFilters(filters)
             setOrgData(fetchedOrgData)
             setScientists(scientists)
             setTotalScientistCount(scientistCount)
+
+            const initialUsedOrganization =
+                filters.cathedras.size > 0
+                    ? UsedOrganization.cathedra
+                    : filters.institutes.size > 0
+                        ? UsedOrganization.institute
+                        : UsedOrganization.university
+
+            setUsedOrg(initialUsedOrganization)
+            previousFilters.current = filters.copy()
         })()
     }, [])
 
-    const previousFilters = useRef(filters.copy())
 
     const nameField = useMemo(() => {
         setNameFilterChanged(false)
@@ -717,7 +724,7 @@ export default function ViewPage() {
                             canResetFilters={hasFilters}
                             onFilterReset={() => {
                                 filters.resetFilters()
-                                setFilters(new FilterState())
+                                setFilters(filters.copy())
                                 setHasFilters(false)
                             }}
                             sortMethod={sortMethod}

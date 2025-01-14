@@ -289,6 +289,13 @@ export class FilterState {
         this.name = cookies[FilterState.COOKIE_NAME]
         this.surname = cookies[FilterState.COOKIE_SURNAME]
 
+        if(this.name !== undefined) {
+            this.name = decodeURIComponent(this.name)
+        }
+        if(this.surname !== undefined) {
+            this.surname = decodeURIComponent(this.surname)
+        }
+
         this.extendedTabs = unpackCookie(cookies[FilterState.COOKIE_EXTENDED_TABS])
         console.log(this.extendedTabs)
     }
