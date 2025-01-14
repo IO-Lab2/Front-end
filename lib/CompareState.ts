@@ -29,12 +29,10 @@ export class CompareState {
     }
 
     readFromCookies(cookies: { [key: string]: string | undefined}) {
-        const cookie = decodeURI(cookies[CompareState.COOKIE_COMPARE] as string).replaceAll("%2C", ",") // HACK: i hate webdev
-        console.log(`Cookie ${cookie}`)
-        this.scientists = unpackCookie(cookie)
+        this.scientists = unpackCookie(cookies[CompareState.COOKIE_COMPARE])
     }
 
     static readonly COOKIE_COMPARE: string = "compare"
-    static readonly LIMIT: number = 4
+    static readonly LIMIT: number = 10
 }
 

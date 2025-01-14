@@ -1,6 +1,6 @@
 import {setCookie, deleteCookie} from "cookies-next/client";
-import {fetchSearch, SearchResponse} from "@/lib/API";
-import {packCookieSet, unpackCookie} from "@/lib/CookieHelpers";
+import {fetchSearch, SearchResponse, YearScoreFilter} from "@/lib/API";
+import {packCookieArray, packCookieSet, unpackArrayCookie, unpackCookie} from "@/lib/CookieHelpers";
 
 export class FilterState {
     universities: Set<string> = new Set()
@@ -22,6 +22,7 @@ export class FilterState {
     publishers: Set<string> = new Set()
     publicationYears: Set<number> = new Set()
     publicationTypes: Set<string> = new Set()
+    publicationYearFilters: YearScoreFilter[] = []
 
     name?: string
     surname?: string
@@ -42,6 +43,7 @@ export class FilterState {
 
         copied.publishers = new Set(this.publishers)
         copied.publicationYears = new Set(this.publicationYears)
+        copied.publicationYearFilters = Array.of(...this.publicationYearFilters)
 
         copied.name = this.name
         copied.surname = this.surname
@@ -63,7 +65,7 @@ export class FilterState {
             name: this.name,
             surname: this.surname,
             journalTypes: this.publicationTypes.values().toArray(),
-            // TODO year scores
+            yearScoreFilters: this.publicationYearFilters.values().toArray(),
         })
     }
 
@@ -81,6 +83,7 @@ export class FilterState {
         this.publishers.clear()
         this.publicationYears.clear()
         this.publicationTypes.clear()
+        this.publicationYearFilters = []
         this.name = undefined
         this.surname = undefined
 
@@ -99,6 +102,7 @@ export class FilterState {
         deleteCookie(FilterState.COOKIE_PUBLICATION_TYPE, { sameSite: "strict" })
         deleteCookie(FilterState.COOKIE_NAME, { sameSite: "strict" })
         deleteCookie(FilterState.COOKIE_SURNAME, { sameSite: "strict" })
+        deleteCookie(FilterState.COOKIE_YEAR_SCORE, { sameSite: "strict" })
     }
 
     hasFilters(): boolean {
@@ -115,6 +119,7 @@ export class FilterState {
             || this.publishers.size > 0
             || this.publicationYears.size > 0
             || this.publicationTypes.size > 0
+            || this.publicationYearFilters.length > 0
             || this.name !== undefined
             || this.surname !== undefined
     }
@@ -226,29 +231,6 @@ export class FilterState {
         }
     }
 
-    syncIFScoreCookie() {
-        if(this.ifScore.min !== undefined) {
-            setCookie(FilterState.COOKIE_IF_SCORE_MIN, this.ifScore.min, {
-                sameSite: "strict"
-            })
-        } else {
-            deleteCookie(FilterState.COOKIE_IF_SCORE_MIN, {
-                sameSite: "strict"
-            })
-        }
-
-        if(this.ifScore.max !== undefined) {
-            setCookie(FilterState.COOKIE_IF_SCORE_MAX, this.ifScore.max, {
-                sameSite: "strict"
-            })
-        } else {
-            deleteCookie(FilterState.COOKIE_IF_SCORE_MAX, {
-                sameSite: "strict"
-            })
-        }
-
-    }
-
     syncPublisherCookie() {
         setCookie(FilterState.COOKIE_PUBLISHERS, packCookieSet(this.publishers), {
             sameSite: "strict"
@@ -267,6 +249,12 @@ export class FilterState {
         })
     }
 
+    syncYearScoreCookie() {
+        setCookie(FilterState.COOKIE_YEAR_SCORE, packCookieArray(this.publicationYearFilters), {
+            sameSite: "strict"
+        })
+    }
+
     readFromCookies(cookies: { [key: string]: string | undefined }) {
         this.universities = unpackCookie(cookies[FilterState.COOKIE_UNIVERSITIES])
         this.institutes = unpackCookie(cookies[FilterState.COOKIE_INSTITUTES])
@@ -275,6 +263,7 @@ export class FilterState {
         this.publishers = unpackCookie(cookies[FilterState.COOKIE_PUBLISHERS])
         this.publicationYears = unpackCookie(cookies[FilterState.COOKIE_PUBLICATION_YEARS])
         this.publicationTypes = unpackCookie(cookies[FilterState.COOKIE_PUBLICATION_TYPE])
+        this.publicationYearFilters = unpackArrayCookie(cookies[FilterState.COOKIE_YEAR_SCORE])
 
         // NaN values get converted to `undefined`
         this.ministerialPoints.min = Number(cookies[FilterState.COOKIE_MINISTERIAL_POINTS_MIN]) || undefined
@@ -302,4 +291,5 @@ export class FilterState {
     static readonly COOKIE_PUBLICATION_TYPE: string = "publicationType"
     static readonly COOKIE_NAME: string = "name"
     static readonly COOKIE_SURNAME: string = "surname"
+    static readonly COOKIE_YEAR_SCORE: string = "yearScore"
 }

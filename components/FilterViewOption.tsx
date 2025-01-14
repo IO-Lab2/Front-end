@@ -1,6 +1,7 @@
 'use client'
 
-import React, { useState} from "react";
+import React, {useContext, useState} from "react";
+import {ContrastState} from "@/components/Toolbar";
 
 export interface FilterViewOptionProps {
     header?: string
@@ -9,7 +10,6 @@ export interface FilterViewOptionProps {
 
 export interface FilterCheckboxProps {
     label: string
-    count: number
     isChecked?: boolean,
     onChoice?: (isChecked: boolean) => void
 }
@@ -28,12 +28,12 @@ export function FilterCheckbox(props: FilterCheckboxProps) {
                 }
             }/>
         <span className={`p-2 font-[600] align-middle`}>{props.label}</span>
-        <span className={`align-middle`}>({props.count})</span>
     </div>
 }
 
 export function FilterViewOption(props: FilterViewOptionProps) {
     const [expanded, setExpanded] = useState(false)
+    const highContrastMode = useContext(ContrastState)
 
     return <div className={`group/filter_view`}>
         <div
@@ -42,7 +42,7 @@ export function FilterViewOption(props: FilterViewOptionProps) {
             }
             onClick={() => { setExpanded(!expanded) }}
         >
-            <p className={`text-basetext text-2xl font-[600]`}>{props.header}</p>
+            <p className={`${highContrastMode ? "text-white" : "text-basetext"} text-2xl font-[600]`}>{props.header}</p>
         </div>
         <div
             className={`${expanded ? `min-h-12` : `hidden`} bg-white/30 p-2 max-h-72 overflow-y-scroll`}

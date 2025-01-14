@@ -1,45 +1,50 @@
 'use client'
 
+import {useContext} from "react";
+import {ContrastState} from "@/components/Toolbar";
+
 export interface FilterRangeProps {
     min?: number,
     max?: number,
     defaultMin?: number,
     defaultMax?: number,
-    onChange?: (min: number, max: number) => void
+    onChange?: (min?: number, max?: number) => void
 }
 
 export function FilterRange(props: FilterRangeProps) {
     const onChange = props.onChange
+    const highContrastMode = useContext(ContrastState)
 
-    const min = props.min ?? props.defaultMin ?? 0
-    const max = props.max ?? props.defaultMax ?? 0
+    const min = props.min ? Math.max(props.min, props.defaultMin ?? Number.NEGATIVE_INFINITY) : undefined
+    const max = props.max ? Math.min(props.max, props.defaultMax ?? Number.POSITIVE_INFINITY) : undefined
 
     return <>
         <div className={`font-[600]`}>
             <div className={`inline-block w-14 p-2 align-middle`}>Min:</div>
             <input
-                className={`align-middle p-1 rounded-xl min-w-64`}
+                className={`${highContrastMode ? "border border-black" : ""} align-middle p-1 rounded-xl min-w-64`}
                 type="number"
-                value={min}
+                value={min ?? ""}
                 onChange={
                     (value) => {
                         const newMin = Number(value.target.value)
                         if(!isNaN(newMin) && onChange) { onChange(newMin, max) }
                     }
                 }
-                onBlur={(value) => {
-                    const newMin = Number(value.target.value) || props.defaultMin || 0
-                    if(onChange) { onChange(newMin, max) }
+                onBlur={() => {
+                    if(min !== undefined && max !== undefined && min > max && onChange) {
+                        onChange(max, max)
+                    }
                 }}
 
+                placeholder={props.defaultMin?.toString()}
                 min={props.defaultMin ?? 0}
                 max={props.defaultMax}
             />
             <button
-                className={`bg-black/80 rounded-xl text-basetext ml-2 p-1 align-middle`}
+                className={`${highContrastMode ? "bg-black text-white" : "bg-black/80 text-basetext "} rounded-xl ml-2 p-1 align-middle`}
                 onClick={() => {
-                    const newMin = props.defaultMin ?? 0
-                    if(onChange) { onChange(newMin, max) }
+                    if(onChange) { onChange(undefined, max) }
                 }}
             >
                 Reset
@@ -48,28 +53,29 @@ export function FilterRange(props: FilterRangeProps) {
         <div className={`font-[600]`}>
             <div className={`inline-block w-14 p-2 align-middle`}>Max:</div>
             <input
-                className={`align-middle p-1 rounded-xl min-w-64`}
+                className={`${highContrastMode ? "border border-black" : ""} align-middle p-1 rounded-xl min-w-64`}
                 type="number"
-                value={max}
+                value={max ?? ""}
                 onChange={
                     (value) => {
                         const newMax = Number(value.target.value)
                         if (!isNaN(newMax) && onChange) { onChange(min, newMax) }
                     }
                 }
-                onBlur={(value) => {
-                    const newMax = Number(value.target.value) || props.defaultMax || 0
-                    if(onChange) { onChange(min, newMax) }
+                onBlur={() => {
+                    if(min !== undefined && max !== undefined && max < min && onChange) {
+                        onChange(min, min)
+                    }
                 }}
 
+                placeholder={props.defaultMax?.toString()}
                 min={props.defaultMin ?? 0}
                 max={props.defaultMax}
             />
             <button
-                className={`bg-black/80 rounded-xl text-basetext ml-2 p-1 align-middle`}
+                className={`${highContrastMode ? "bg-black text-white" : "bg-black/80 text-basetext "} rounded-xl ml-2 p-1 align-middle`}
                 onClick={() => {
-                    const newMax = props.defaultMax ?? 0
-                    if(onChange) { onChange(min, newMax) }
+                    if(onChange) { onChange(min, undefined) }
                 }}
             >
                 Reset

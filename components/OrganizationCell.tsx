@@ -1,7 +1,8 @@
 'use client'
 
 import {Organization} from "@/lib/API";
-import {MouseEventHandler} from "react";
+import {MouseEventHandler, useContext} from "react";
+import {ContrastState} from "@/components/Toolbar";
 
 export interface OrganizationCellProps {
     org: Organization,
@@ -9,6 +10,8 @@ export interface OrganizationCellProps {
 }
 
 export function OrganizationCell(props: OrganizationCellProps) {
+    const highContrastMode = useContext(ContrastState)
+
     return (
         <div
             className={
@@ -16,7 +19,7 @@ export function OrganizationCell(props: OrganizationCellProps) {
             }
             onClick={props.onClick}
         >
-            <span className={`text-basetext text-2xl font-[600]`}>{props.org.name}</span>
+            <span className={`${highContrastMode ? "text-white" : "text-basetext"} text-2xl font-[600]`}>{props.org.name}</span>
         </div>
     )
 }

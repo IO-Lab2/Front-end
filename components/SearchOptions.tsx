@@ -1,24 +1,30 @@
 'use client'
 
+import {useContext, useState} from "react";
+import {ContrastState} from "@/components/Toolbar";
+
 export enum SortMethod {
-    Organization,
-    IFDescending,
-    IFAscending,
-    MinisterialPointsDescending,
-    MinisterialPointsAscending
+    Name = "Imie/Nazwisko (A-Z)",
+    NameDescending = "Imie/Nazwisko (Z-A)",
+    PublicationCount = "Publikacje (Rosnąco)",
+    PublicationCountDescending = "Publikacje (Malejąco)",
+    MinisterialPoints = "Punkty Ministerialne (Rosnąco)",
+    MinisterialPointsDescending = "Punkty Ministerialne (Malejąco)"
 }
 
 export interface SearchOptionsProps {
     pageCount?: number,
     selectedPage?: number,
-    onPageChange?: (page: number) => void,
-    onRefresh?: () => void,
-    onSortMethodChange?: (sortMethod: SortMethod) => void,
-    onFilterReset?: () => void,
+    sortMethod?: SortMethod,
     canResetFilters?: boolean,
     isSearchInProgress?: boolean,
     compareCount?: number,
     compareLimit?: number,
+
+    onPageChange?: (page: number) => void,
+    onRefresh?: () => void,
+    onSortMethodChange?: (sortMethod: SortMethod | undefined) => void,
+    onFilterReset?: () => void,
     onCompare?: () => void,
     onResetCompare?: () => void,
 }
@@ -30,10 +36,9 @@ export function SearchOptions(props: SearchOptionsProps) {
     const onCompare = props.onCompare
     const onResetCompare = props.onResetCompare
 
-    // TODO Sorting Options
-    // const onSortMethodChange = props.onSortMethodChange
+    const highContrastMode = useContext(ContrastState)
 
-    const buttonNoRound = `text-center content-center text-basetext font-bold text-xl`
+    const buttonNoRound = `text-center content-center ${highContrastMode ? "text-white" : "text-basetext"} font-bold text-xl`
     const buttonCommon = `rounded-2xl ${buttonNoRound}`
     const disabledButton = `cursor-default text-gray-300 opacity-40`
 
@@ -47,12 +52,14 @@ export function SearchOptions(props: SearchOptionsProps) {
     const enableButtons = !props.isSearchInProgress
     const enableCompare = enableButtons && compareCount > 1
 
+    const [sortingTabExpanded, setSortingTabExpanded] = useState(false)
+
     return (
         <div className={`flex flex-col gap-4`}>
             <div className={`flex gap-6`}>
                 <div
                     className={`w-60 h-12 ${buttonCommon} bg-black/80 ${enableButtons ? "cursor-pointer" : disabledButton}`}
-                    onClick={(enableButtons && onRefresh) ? () => onRefresh() : undefined}
+                    onClick={(enableButtons && onRefresh) ? () => { setSortingTabExpanded(false); onRefresh() } : undefined}
                 >
                     Odśwież Wyniki
                 </div>
@@ -63,8 +70,40 @@ export function SearchOptions(props: SearchOptionsProps) {
                     Porównaj ({compareCount ?? 0}{props.compareLimit ? `, max ${props.compareLimit}` : ""})
                 </div>
                 <div
-                    className={`w-60 h-12 ${buttonCommon} bg-black/80 ${enableButtons ? "cursor-pointer" : disabledButton}`}>
-                    Sortuj Według:
+                    className={`w-60 h-12 ${buttonNoRound} bg-black/80 ${enableButtons ? "cursor-pointer" : disabledButton} ${sortingTabExpanded && enableButtons ? "rounded-t-2xl" : "rounded-2xl"}`}
+                    onMouseLeave={() => setSortingTabExpanded(false)}
+                >
+                    <div
+                        className={`h-full flex flex-col justify-center items-center`}
+                        onClick={() => {
+                            setSortingTabExpanded(!sortingTabExpanded)
+                        }}
+                    >
+                        <p>Sortuj Według:</p>
+                        <p className={`text-xs`}>
+                            {
+                                props.sortMethod
+                            }
+                        </p>
+                    </div>
+                    <div
+                        className={
+                            `${sortingTabExpanded && enableButtons ? "" : "hidden"} absolute w-60 bg-white border-2
+                            border-black/80 text-black/80 bg-clip-padding rounded-b-2xl text-sm`
+                        }
+                    >
+                        {
+                            Object.entries(SortMethod).map(([key, value]) => {
+                                return <SortOption
+                                    key={key}
+                                    label={value}
+                                    selected={props.sortMethod === value}
+                                    method={value}
+                                    onChoice={props.onSortMethodChange}
+                                />
+                            })
+                        }
+                    </div>
                 </div>
             </div>
 
@@ -122,3 +161,18 @@ export function SearchOptions(props: SearchOptionsProps) {
     )
 }
 
+interface SortOptionProps {
+    label: string,
+    selected: boolean,
+    method: SortMethod,
+    onChoice?: (sortMethod: SortMethod | undefined) => void,
+}
+
+function SortOption(props: SortOptionProps) {
+    return <div
+        className={`hover:bg-blue-400 p-0.5 last:rounded-b-2xl`}
+        onClick={() => { if(props.onChoice) { props.onChoice(props.selected ? undefined : props.method) } }}
+    >
+        {props.selected ? <b>&#8226; {props.label} &#8226;</b> : <span>{props.label}</span>}
+    </div>
+}
