@@ -84,5 +84,5 @@ function openScientistPage(router: AppRouterInstance, id: string, highContrastMo
         query.set("highContrast", "1")
     }
 
-    router.replace("/scientist?" + query.toString())
+    router.push("/scientist?" + query.toString())
 }

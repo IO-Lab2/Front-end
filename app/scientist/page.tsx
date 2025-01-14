@@ -1,12 +1,10 @@
 'use client'
 
 import {useRouter, useSearchParams,} from "next/navigation";
-import {useEffect, useMemo, useState} from "react";
+import {useEffect, useState} from "react";
 import {fetchPublicationsByScientistID, fetchScientistInfo, Publication, Scientist} from "@/lib/API";
 import PublicationTable from "@/components/PublicationTable";
 import MinisterialScoreTable from "@/components/MinisterialScoreTable";
-import {CompareState} from "@/lib/CompareState";
-import {getCookies} from "cookies-next/client";
 import Toolbar, {ContrastState} from "@/components/Toolbar";
 import {ACCOUNT_BOX_ICON} from "@/components/Icons";
 
@@ -20,14 +18,6 @@ export default function ScientistPage() {
 
     const [scientist, setScientist] = useState<Scientist | null | undefined>(undefined)
     const [publications, setPublications] = useState<Publication[]>([])
-
-    const compareInfo = useMemo(() => {
-        const state = new CompareState()
-        state.readFromCookies(getCookies() ?? {})
-        console.log("Reading comparison info from cookies...")
-
-        return state
-    }, [])
 
     useEffect(() => {
         if (scientistID !== null) {
@@ -43,13 +33,6 @@ export default function ScientistPage() {
             setScientist(null)
         }
     }, [scientistID])
-
-    const [isBeingCompared, setIsBeingCompared] = useState<boolean>(false)
-    const disableCompare = compareInfo.scientists.size >= CompareState.LIMIT && !isBeingCompared
-
-    useEffect(() => {
-        setIsBeingCompared(scientist ? compareInfo.scientists.has(scientist.id) : false)
-    }, [compareInfo, scientist])
 
     if (!scientist) {
         return <></>
@@ -110,7 +93,7 @@ export default function ScientistPage() {
                         className={`p-2 h-20 bg-black/80 rounded-xl text-center content-center ${highContrastMode ? "text-white" : "text-basetext"} font-bold cursor-pointer`}
                         onClick={() => {
                             const contrast = highContrastMode ? "?highContrast=1" : ""
-                            router.replace("/view" + contrast)
+                            router.push("/view" + contrast)
                         }}
                     >
                         &lt; Wróć
@@ -122,26 +105,6 @@ export default function ScientistPage() {
                             value="Profil w bazie uczelni"
                         />
                     </form>
-                    <div
-                        className={`p-2 h-20 bg-black/80 rounded-xl text-center content-center ${highContrastMode ? "text-white" : "text-basetext"} font-bold ${disableCompare ? "cursor-default opacity-20" : "cursor-pointer"}`}
-                        onClick={() => {
-                            if (!disableCompare) {
-                                if (isBeingCompared) {
-                                    if (compareInfo.remove(scientist.id)) {
-                                        compareInfo.syncCookie()
-                                        setIsBeingCompared(false)
-                                    }
-                                } else {
-                                    if (compareInfo.add(scientist.id)) {
-                                        compareInfo.syncCookie()
-                                        setIsBeingCompared(true)
-                                    }
-                                }
-                            }
-                        }}
-                    >
-                        {isBeingCompared ? `Usuń z porównywania` : `Dodaj do porównywania`}
-                    </div>
                 </div>
             </div>
             <div className={`flex flex-col gap-6 p-6 `}>

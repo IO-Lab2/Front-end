@@ -139,7 +139,7 @@ export default function ComparePage() {
                 } else {
                     queryCopy.append("highContrast", "1")
                 }
-                router.replace("/compare?" + queryCopy.toString())
+                router.push("/compare?" + queryCopy.toString())
             }
         }
     >
@@ -152,7 +152,7 @@ export default function ComparePage() {
                 className={`${highContrastMode ? "bg-black text-white" : "bg-black/80 text-basetext"} p-4 rounded-r-2xl w-44 text-center cursor-pointer`}
                 onClick={() => {
                     const contrast = highContrastMode ? "?highContrast=1" : ""
-                    router.replace("/view" + contrast)
+                    router.push("/view" + contrast)
                 }}
             >
                 {`<`} Powrót

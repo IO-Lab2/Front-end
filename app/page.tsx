@@ -2,7 +2,7 @@
 
 import FilterHeaderTable from "@/components/FilterHeaderTable";
 import SkipFilterButton from "@/components/SkipFilterButton";
-import {JSX, useState} from "react";
+import {JSX, useEffect, useState} from "react";
 import {useRouter, useSearchParams} from "next/navigation";
 import {setCookie} from "cookies-next/client";
 import {FilterState} from "@/lib/FilterState";
@@ -15,6 +15,9 @@ export default function Home() {
     const query = useSearchParams()
 
     const [universityChoice, setUniversityChoice] = useState<UUID | null>(null);
+
+    // resets filters when entering main page
+    useEffect(() => (new FilterState()).resetFilters(true), [])
 
     let pageContents: JSX.Element
 
@@ -42,6 +45,9 @@ export default function Home() {
                     setCookie(FilterState.COOKIE_UNIVERSITIES, JSON.stringify([org.name]), {
                         sameSite: "strict"
                     })
+                    setCookie(FilterState.COOKIE_EXTENDED_TABS, JSON.stringify([1]), {
+                        sameSite: "strict"
+                    })
                     setUniversityChoice(org.id)
                 }}
             />
@@ -54,6 +60,9 @@ export default function Home() {
                 onChoice={(org: Organization) => {
                     console.log(`Wybrano instytut: ${org.name}`)
                     setCookie(FilterState.COOKIE_INSTITUTES, JSON.stringify([org.name]), {
+                        sameSite: "strict"
+                    })
+                    setCookie(FilterState.COOKIE_EXTENDED_TABS, JSON.stringify([2]), {
                         sameSite: "strict"
                     })
 
