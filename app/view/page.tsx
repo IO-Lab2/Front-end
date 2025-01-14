@@ -15,7 +15,7 @@ import {
     Scientist,
     SearchResponse,
 } from "@/lib/API";
-import {useEffect, useMemo, useRef, useState} from "react";
+import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {SearchOptions, SortMethod} from "@/components/SearchOptions";
 import {FilterState} from "@/lib/FilterState";
 import {getCookies} from "cookies-next/client";
@@ -71,6 +71,7 @@ export default function ViewPage() {
         const state = new CompareState()
         state.readFromCookies(getCookies() ?? {})
         console.log("Reading comparison info from cookies...")
+        state.syncCookie()
 
         return state
     }, [])
@@ -526,6 +527,28 @@ export default function ViewPage() {
             resultCountSuffix = "ów"
             break
     }
+
+    const refreshCallback = useCallback(async () => {
+        setScientists(null)
+        setTotalScientistCount(null)
+        previousFilters.current = filters.copy()
+
+        const result: SearchResponse | null = await filters.search(perPageLimit)
+
+        if (result) {
+            const count = result.count ?? 0
+
+            const pageCount = Math.ceil(count / perPageLimit)
+            const selectedPage = pageCount == 0 ? 0 : 1
+
+            setScientists(result.scientists ?? [])
+            setTotalScientistCount(count)
+
+            setPageCount(pageCount)
+            setCurrentPage(selectedPage)
+        }
+    }, [filters])
+
     return <Toolbar
         highContrastMode={highContrastMode}
         onToggleContrast={
@@ -702,31 +725,14 @@ export default function ViewPage() {
                     <div className={`pl-8 pr-8 p-6 w-full content-center flex flex-col gap-4`}>
                         <p className={`text-3xl font-[600]`}>{totalScientistCount !== null ? `Znaleziono ${totalScientistCount} wynik${resultCountSuffix} wyszukiwania` : `Odświeżam wyniki...`}</p>
                         <SearchOptions
-                            onRefresh={async () => {
-                                setScientists(null)
-                                setTotalScientistCount(null)
-                                previousFilters.current = filters.copy()
-
-                                const result: SearchResponse | null = await filters.search(perPageLimit)
-
-                                if (result) {
-                                    const count = result.count ?? 0
-
-                                    const pageCount = Math.ceil(count / perPageLimit)
-                                    const selectedPage = pageCount == 0 ? 0 : 1
-
-                                    setScientists(result.scientists ?? [])
-                                    setTotalScientistCount(count)
-
-                                    setPageCount(pageCount)
-                                    setCurrentPage(selectedPage)
-                                }
-                            }}
+                            onRefresh={refreshCallback}
                             canResetFilters={hasFilters}
                             onFilterReset={() => {
                                 filters.resetFilters()
                                 setFilters(filters.copy())
                                 setHasFilters(false)
+
+                                refreshCallback().then()
                             }}
                             sortMethod={sortMethod}
                             onSortMethodChange={(sortMethod) => {

@@ -16,15 +16,18 @@ export default function ScientistPage() {
 
     const highContrastMode = query.has("highContrast")
 
-    const [scientist, setScientist] = useState<Scientist | null | undefined>(undefined)
+    const [scientist, setScientist] = useState<Scientist | null | undefined>(undefined) // undefined means not yet loaded, null means invalid scientist
     const [publications, setPublications] = useState<Publication[]>([])
 
     useEffect(() => {
         if (scientistID !== null) {
             fetchScientistInfo(scientistID)
-                .then((newScientist) => {
-                    setScientist(newScientist)
-                })
+                .then(
+                    (newScientist) => {
+                        setScientist(newScientist)
+                    },
+                    () => setScientist(null)
+                )
             fetchPublicationsByScientistID(scientistID)
                 .then((publications) => {
                     setPublications(publications ?? [])
@@ -34,19 +37,14 @@ export default function ScientistPage() {
         }
     }, [scientistID])
 
-    if (!scientist) {
-        return <></>
-    } // FIXME display something when loading
-
     const emailLabel =
-        scientist.email
+        scientist?.email
             ? <a className={`underline`} href={`mailto:${scientist.email}`}>{scientist.email}</a>
             : <span>-</span>
 
     const totalImpactFactor = publications.reduce((total, next) => {
         return total + next.impact_factor
     }, 0)
-
 
     return <Toolbar
         highContrastMode={highContrastMode}
@@ -72,20 +70,40 @@ export default function ScientistPage() {
                 <div className={`flex-1 flex flex-col font-[600]`}>
                     <div className={`w-full flex-1 flex flex-col gap-2`}>
                         <p className={`text-4xl`}>
-                            <span className={`text-gray-800/80`}>{scientist.academic_title}</span>
-                            &nbsp;
-                            <span className={`text-5xl`}>{scientist.first_name} {scientist.last_name}</span>
+                            {
+                                scientist
+                                    ? <>
+                                        <span className={`text-gray-800/80`}>{scientist.academic_title}</span>
+                                        <span>&nbsp;</span>
+                                        <span className={`text-5xl`}>{scientist.first_name} {scientist.last_name}</span>
+                                    </>
+                                    : scientist === null
+                                        ? <span className={`text-5xl`}>Nieprawidłowe ID naukowca</span>
+                                        : undefined
+                            }
                         </p>
                         <p className={`text-2xl text-gray-800/80`}>
-                            <span>{scientist.position ?? ""}</span>
-                            <span className={`ml-2 mr-2`}>&#8226;</span>
-                            <span>ID: {scientist.id}</span>
+                            {
+                                scientist
+                                    ? <>
+                                        <span>{scientist?.position ?? ""}</span>
+                                        <span className={`ml-2 mr-2`}>&#8226;</span>
+                                        <span>ID: {scientist?.id}</span>
+                                    </>
+                                    : undefined
+                            }
                         </p>
                     </div>
                     <div className={`w-full flex-1 flex flex-col place-content-end gap-2`}>
-                        <p className={`text-2xl ${highContrastMode ? "text-black" : "text-bluetext"}`}>
-                            Email: {emailLabel}
-                        </p>
+                        {
+                            scientist
+                                ? (
+                                    <p className={`text-2xl ${highContrastMode ? "text-black" : "text-bluetext"}`}>
+                                        Email: {emailLabel}
+                                    </p>
+                                )
+                                : undefined
+                        }
                     </div>
                 </div>
                 <div className={`flex flex-col justify-center gap-6 w-60 text-lg`}>
@@ -98,55 +116,62 @@ export default function ScientistPage() {
                     >
                         &lt; Wróć
                     </div>
-                    <form action={scientist.profile_url} target="_blank">
+                    <form action={scientist?.profile_url} target="_blank">
                         <input
-                            className={`p-2 h-20 w-full bg-black/80 rounded-xl text-center content-center ${highContrastMode ? "text-white" : "text-basetext"} font-bold text-wrap cursor-pointer`}
+                            className={`p-2 h-20 w-full bg-black/80 rounded-xl text-center content-center ${highContrastMode ? "text-white" : "text-basetext"} font-bold text-wrap ${scientist ? "cursor-pointer" : "opacity-40"}`}
                             type="submit"
                             value="Profil w bazie uczelni"
+                            disabled={!scientist}
                         />
                     </form>
                 </div>
             </div>
-            <div className={`flex flex-col gap-6 p-6 `}>
-                <div
-                    className={`p-6 pl-12 pr-12 bg-white/50 flex gap-12 rounded-2xl text-2xl font-semibold ${highContrastMode ? "border-2 border-black text-black" : "text-gray-800/80"}`}
-                >
-                    <div className={`flex-1 flex`}>
-                        <div className={`flex-1`}>
-                            <p>Punkty ministerialne:</p>
-                            <p>Współczynnik Impact Factor:</p>
-                            <p>h-index WoS:</p>
-                            <p>h-index Scopus:</p>
-                        </div>
-                        <div className={`flex-1 text-right`}>
-                            <p>{scientist.bibliometrics.ministerial_score ?? 0}</p>
-                            <p>{totalImpactFactor.toFixed(1)}</p>
-                            <p>{scientist.bibliometrics.h_index_wos ?? 0}</p>
-                            <p>{scientist.bibliometrics.h_index_scopus ?? 0}</p>
-                        </div>
-                    </div>
-                    <div className={`flex-1`}>
-                        <p>Dyscypliny:</p>
-                        <div
-                            className={`mt-1 text-lg underline ${highContrastMode ? "text-black/80" : "text-bluetext"} capitalize`}>
-                            {
-                                (scientist.research_areas ?? [])
-                                    .map((area, i) => {
-                                        return <p key={i}>{area.name}</p>
-                                    })
-                            }
-                        </div>
-                    </div>
-                </div>
+            {
+                scientist
+                    ? (
+                        <div className={`flex flex-col gap-6 p-6 `}>
+                            <div
+                                className={`p-6 pl-12 pr-12 bg-white/50 flex gap-12 rounded-2xl text-2xl font-semibold ${highContrastMode ? "border-2 border-black text-black" : "text-gray-800/80"}`}
+                            >
+                                <div className={`flex-1 flex`}>
+                                    <div className={`flex-1`}>
+                                        <p>Punkty ministerialne:</p>
+                                        <p>Współczynnik Impact Factor:</p>
+                                        <p>h-index WoS:</p>
+                                        <p>h-index Scopus:</p>
+                                    </div>
+                                    <div className={`flex-1 text-right`}>
+                                        <p>{scientist.bibliometrics.ministerial_score ?? 0}</p>
+                                        <p>{totalImpactFactor.toFixed(1)}</p>
+                                        <p>{scientist.bibliometrics.h_index_wos ?? 0}</p>
+                                        <p>{scientist.bibliometrics.h_index_scopus ?? 0}</p>
+                                    </div>
+                                </div>
+                                <div className={`flex-1`}>
+                                    <p>Dyscypliny:</p>
+                                    <div
+                                        className={`mt-1 text-lg underline ${highContrastMode ? "text-black/80" : "text-bluetext"} capitalize`}>
+                                        {
+                                            (scientist.research_areas ?? [])
+                                                .map((area, i) => {
+                                                    return <p key={i}>{area.name}</p>
+                                                })
+                                        }
+                                    </div>
+                                </div>
+                            </div>
 
-                <ContrastState.Provider value={highContrastMode}>
-                    <MinisterialScoreTable
-                        scores={scientist.publication_scores ?? []}
-                        total={scientist.bibliometrics.ministerial_score ?? 0}/>
-                    <PublicationTable
-                        publications={publications}/>
-                </ContrastState.Provider>
-            </div>
+                            <ContrastState.Provider value={highContrastMode}>
+                                <MinisterialScoreTable
+                                    scores={scientist.publication_scores ?? []}
+                                    total={scientist.bibliometrics.ministerial_score ?? 0}/>
+                                <PublicationTable
+                                    publications={publications}/>
+                            </ContrastState.Provider>
+                        </div>
+                    )
+                    : undefined
+            }
         </div>
     </Toolbar>
 }

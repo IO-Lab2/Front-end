@@ -70,43 +70,45 @@ export default function ComparePage() {
                 }
             }
 
-            ministerial.current.max = output.reduce((prev, next) => {
-                return (prev.bibliometrics.ministerial_score ?? 0) > (next.bibliometrics.ministerial_score ?? 0) ? prev : next
-            }).bibliometrics.ministerial_score ?? 0
+            if(output.length > 0) {
+                ministerial.current.max = output.reduce((prev, next) => {
+                    return (prev.bibliometrics.ministerial_score ?? 0) > (next.bibliometrics.ministerial_score ?? 0) ? prev : next
+                }).bibliometrics.ministerial_score ?? 0
 
-            ministerial.current.min = output.reduce((prev, next) => {
-                return (prev.bibliometrics.ministerial_score ?? 0) < (next.bibliometrics.ministerial_score ?? 0) ? prev : next
-            }).bibliometrics.ministerial_score ?? 0
+                ministerial.current.min = output.reduce((prev, next) => {
+                    return (prev.bibliometrics.ministerial_score ?? 0) < (next.bibliometrics.ministerial_score ?? 0) ? prev : next
+                }).bibliometrics.ministerial_score ?? 0
 
-            ifScore.current.max = output.reduce((max, next) => {
-                const nextIfScore = outputIFScores[next.id] ?? 0
-                return nextIfScore > max ? nextIfScore : max
-            }, 0)
-            ifScore.current.min = output.reduce((min, next) => {
-                const nextIfScore = outputIFScores[next.id] ?? 0
-                return nextIfScore < min ? nextIfScore : min
-            }, 0)
+                ifScore.current.max = output.reduce((max, next) => {
+                    const nextIfScore = outputIFScores[next.id] ?? 0
+                    return nextIfScore > max ? nextIfScore : max
+                }, 0)
+                ifScore.current.min = output.reduce((min, next) => {
+                    const nextIfScore = outputIFScores[next.id] ?? 0
+                    return nextIfScore < min ? nextIfScore : min
+                }, 0)
 
-            publicationCount.current.max = output.reduce((prev, next) => {
-                return (prev.bibliometrics.publication_count ?? 0) > (next.bibliometrics.publication_count ?? 0) ? prev : next
-            }).bibliometrics.publication_count ?? 0
-            publicationCount.current.min = output.reduce((prev, next) => {
-                return (prev.bibliometrics.publication_count ?? 0) < (next.bibliometrics.publication_count ?? 0) ? prev : next
-            }).bibliometrics.publication_count ?? 0
+                publicationCount.current.max = output.reduce((prev, next) => {
+                    return (prev.bibliometrics.publication_count ?? 0) > (next.bibliometrics.publication_count ?? 0) ? prev : next
+                }).bibliometrics.publication_count ?? 0
+                publicationCount.current.min = output.reduce((prev, next) => {
+                    return (prev.bibliometrics.publication_count ?? 0) < (next.bibliometrics.publication_count ?? 0) ? prev : next
+                }).bibliometrics.publication_count ?? 0
 
-            hIndexWoS.current.max = output.reduce((prev, next) => {
-                return (prev.bibliometrics.h_index_wos ?? 0) > (next.bibliometrics.h_index_wos ?? 0) ? prev : next
-            }).bibliometrics.h_index_wos ?? 0
-            hIndexWoS.current.min = output.reduce((prev, next) => {
-                return (prev.bibliometrics.h_index_wos ?? 0) < (next.bibliometrics.h_index_wos ?? 0) ? prev : next
-            }).bibliometrics.h_index_wos ?? 0
+                hIndexWoS.current.max = output.reduce((prev, next) => {
+                    return (prev.bibliometrics.h_index_wos ?? 0) > (next.bibliometrics.h_index_wos ?? 0) ? prev : next
+                }).bibliometrics.h_index_wos ?? 0
+                hIndexWoS.current.min = output.reduce((prev, next) => {
+                    return (prev.bibliometrics.h_index_wos ?? 0) < (next.bibliometrics.h_index_wos ?? 0) ? prev : next
+                }).bibliometrics.h_index_wos ?? 0
 
-            hIndexScopus.current.max = output.reduce((prev, next) => {
-                return (prev.bibliometrics.h_index_scopus ?? 0) > (next.bibliometrics.h_index_scopus ?? 0) ? prev : next
-            }).bibliometrics.h_index_scopus ?? 0
-            hIndexScopus.current.min = output.reduce((prev, next) => {
-                return (prev.bibliometrics.h_index_scopus ?? 0) < (next.bibliometrics.h_index_scopus ?? 0) ? prev : next
-            }).bibliometrics.h_index_scopus ?? 0
+                hIndexScopus.current.max = output.reduce((prev, next) => {
+                    return (prev.bibliometrics.h_index_scopus ?? 0) > (next.bibliometrics.h_index_scopus ?? 0) ? prev : next
+                }).bibliometrics.h_index_scopus ?? 0
+                hIndexScopus.current.min = output.reduce((prev, next) => {
+                    return (prev.bibliometrics.h_index_scopus ?? 0) < (next.bibliometrics.h_index_scopus ?? 0) ? prev : next
+                }).bibliometrics.h_index_scopus ?? 0
+            }
 
             setScientists(output)
             setOrgs(outputOrgs)
@@ -152,6 +154,8 @@ export default function ComparePage() {
                 className={`${highContrastMode ? "bg-black text-white" : "bg-black/80 text-basetext"} p-4 rounded-r-2xl w-44 text-center cursor-pointer`}
                 onClick={() => {
                     const contrast = highContrastMode ? "?highContrast=1" : ""
+                    compareInfo.scientists.clear()
+                    compareInfo.syncCookie()
                     router.push("/view" + contrast)
                 }}
             >
