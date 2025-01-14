@@ -1,6 +1,6 @@
 'use client'
 
-import {FilterCheckbox, FilterViewOption} from "@/components/FilterViewOption";
+import {FilterViewOption} from "@/components/FilterViewOption";
 import {ScientistCell} from "@/components/ScientistCell";
 import {
     APIRange,
@@ -25,6 +25,7 @@ import {CompareState} from "@/lib/CompareState";
 import {useRouter, useSearchParams} from "next/navigation";
 import PublicationScoreDynamicFilter from "@/components/PublicationScoreDynamicFilter";
 import Toolbar, {ContrastState} from "@/components/Toolbar";
+import {FilterCheckbox} from "@/components/FilterCheckbox";
 
 class OrganizationData {
     constructor() {
@@ -106,7 +107,6 @@ export default function ViewPage() {
     const [ministerialPointFilterChanged, setMinisterialPointFilterChanged] = useState<boolean>(true)
     const [publishersFilterChanged, setPublishersFilterChanged] = useState<boolean>(true)
     const [journalFilterChanged, setJournalFilterChanged] = useState<boolean>(true)
-    const [publicationYearFilterChanged, setPublicationYearFilterChanged] = useState<boolean>(true)
     const [scientistsChanged, setScientistsChanged] = useState<boolean>(true)
 
     // Only allows selecting a single organization type (unselects the rest)
@@ -146,7 +146,7 @@ export default function ViewPage() {
             setScientists(scientists)
             setTotalScientistCount(scientistCount)
         })()
-    }, [filters])
+    }, [])
 
     const previousFilters = useRef(filters.copy())
 
@@ -458,35 +458,6 @@ export default function ViewPage() {
         }) ?? []
     }, [filters, journalFilterChanged, orgData])
 
-    // Shouldn't these be just a range?
-    const publicationYearCheckboxes = useMemo(() => {
-        setPublicationYearFilterChanged(false)
-
-        return orgData?.publicationYears.map((year) => {
-            return <FilterCheckbox
-                key={year}
-                label={year.toString()}
-                isChecked={filters.publicationYears.has(year)}
-                onChoice={(isChecked) => {
-                    if (isChecked) {
-                        filters.publicationYears.add(year)
-                        console.log(`Added publication year filter: ${year}`)
-                    } else {
-                        filters.publicationYears.delete(year)
-                        console.log(`Removed publication year filter: ${year}`)
-                    }
-
-                    filters.syncPublicationYearCookie()
-
-                    setHasFilters(true)
-                    if (!publicationYearFilterChanged) {
-                        setPublicationYearFilterChanged(true)
-                    }
-                }}
-            />
-        }) ?? []
-    }, [filters, publicationYearFilterChanged, orgData])
-
     const scientistCells = useMemo(() => {
         setScientistsChanged(false)
 
@@ -510,32 +481,31 @@ export default function ViewPage() {
                 }
             })
             .map((scientist) => {
-                    return <ScientistCell
-                        key={scientist.id}
-                        scientist={scientist}
-                        selectedForComparison={compareInfo.scientists.has(scientist.id)}
-                        onSelectForComparison={(select) => {
-                            let modified: boolean
-                            if (select) {
-                                modified = compareInfo.add(scientist.id)
-                            } else {
-                                modified = compareInfo.remove(scientist.id)
-                            }
+                return <ScientistCell
+                    key={scientist.id}
+                    scientist={scientist}
+                    selectedForComparison={compareInfo.scientists.has(scientist.id)}
+                    onSelectForComparison={(select) => {
+                        let modified: boolean
+                        if (select) {
+                            modified = compareInfo.add(scientist.id)
+                        } else {
+                            modified = compareInfo.remove(scientist.id)
+                        }
 
-                            if (modified) {
-                                compareInfo.syncCookie()
-                                if (!scientistsChanged) {
-                                    setScientistsChanged(true)
-                                }
+                        if (modified) {
+                            compareInfo.syncCookie()
+                            if (!scientistsChanged) {
+                                setScientistsChanged(true)
                             }
-                        }}
-                    />
-                }
-            )
+                        }
+                    }}
+                />
+            })
     }, [compareInfo, scientists, scientistsChanged, sortMethod])
 
     let resultCountSuffix: string
-    switch(totalScientistCount) {
+    switch((totalScientistCount ?? 0) % 10) {
         case 1:
             resultCountSuffix = ""
             break
@@ -565,16 +535,158 @@ export default function ViewPage() {
         <ContrastState.Provider value={highContrastMode}>
             <div className={`flex min-h-full h-fit w-full`}>
                 <div className={`min-h-full w-[30rem] flex-shrink-0 flex flex-col`}>
-                    <FilterViewOption header="Naukowiec">{nameField}</FilterViewOption>
-                    <FilterViewOption header="Uczelnia">{universityCheckboxes}</FilterViewOption>
-                    <FilterViewOption header="Instytut">{instituteCheckboxes}</FilterViewOption>
-                    <FilterViewOption header="Katedra">{cathedraCheckboxes}</FilterViewOption>
-                    <FilterViewOption header="Stanowisko">{positionCheckboxes}</FilterViewOption>
-                    <FilterViewOption header="Ilość Publikacji">{publicationCountRange}</FilterViewOption>
-                    <FilterViewOption header="Ilość Punktów Ministerialnych">{ministerialPointRange}</FilterViewOption>
-                    <FilterViewOption header="Wydawca">{publishersCheckboxes}</FilterViewOption>
-                    <FilterViewOption header="Lata Wydawania Publikacji">{publicationYearCheckboxes}</FilterViewOption>
-                    <FilterViewOption header="Rodzaj Publikacji">{journalTypeCheckboxes}</FilterViewOption>
+                    <FilterViewOption
+                        header="Naukowiec"
+                        expanded={filters.extendedTabs.has(0)}
+                        onExpanded={(isExpanded) => {
+                            if(isExpanded) {
+                                filters.extendedTabs.add(0)
+                            } else {
+                                filters.extendedTabs.delete(0)
+                            }
+
+                            filters.syncExtendedTabCookie()
+                            setNameFilterChanged(true)
+                        }}
+                    >
+                        {nameField}
+                    </FilterViewOption>
+
+                    <FilterViewOption
+                        header="Uczelnia"
+                        expanded={filters.extendedTabs.has(1)}
+                        onExpanded={(isExpanded) => {
+                            if(isExpanded) {
+                                filters.extendedTabs.add(1)
+                            } else {
+                                filters.extendedTabs.delete(1)
+                            }
+
+                            filters.syncExtendedTabCookie()
+                            setUniFilterChanged(true)
+                        }}
+                    >
+                        {universityCheckboxes}
+                    </FilterViewOption>
+
+                    <FilterViewOption
+                        header="Instytut"
+                        expanded={filters.extendedTabs.has(2)}
+                        onExpanded={(isExpanded) => {
+                            if(isExpanded) {
+                                filters.extendedTabs.add(2)
+                            } else {
+                                filters.extendedTabs.delete(2)
+                            }
+
+                            filters.syncExtendedTabCookie()
+                            setInstituteFilterChanged(true)
+                        }}
+                    >
+                        {instituteCheckboxes}
+                    </FilterViewOption>
+
+                    <FilterViewOption
+                        header="Katedra"
+                        expanded={filters.extendedTabs.has(3)}
+                        onExpanded={(isExpanded) => {
+                            if(isExpanded) {
+                                filters.extendedTabs.add(3)
+                            } else {
+                                filters.extendedTabs.delete(3)
+                            }
+
+                            filters.syncExtendedTabCookie()
+                            setCathedraFilterChanged(true)
+                        }}
+                    >
+                        {cathedraCheckboxes}
+                    </FilterViewOption>
+
+                    <FilterViewOption
+                        header="Stanowisko"
+                        expanded={filters.extendedTabs.has(4)}
+                        onExpanded={(isExpanded) => {
+                            if(isExpanded) {
+                                filters.extendedTabs.add(4)
+                            } else {
+                                filters.extendedTabs.delete(4)
+                            }
+
+                            filters.syncExtendedTabCookie()
+                            setPositionFilterChanged(true)
+                        }}
+                    >
+                        {positionCheckboxes}
+                    </FilterViewOption>
+
+                    <FilterViewOption
+                        header="Ilość Publikacji"
+                        expanded={filters.extendedTabs.has(5)}
+                        onExpanded={(isExpanded) => {
+                            if(isExpanded) {
+                                filters.extendedTabs.add(5)
+                            } else {
+                                filters.extendedTabs.delete(5)
+                            }
+
+                            filters.syncExtendedTabCookie()
+                            setPublicationCountFilterChanged(true)
+                        }}
+                    >
+                        {publicationCountRange}
+                    </FilterViewOption>
+
+                    <FilterViewOption
+                        header="Ilość Punktów Ministerialnych"
+                        expanded={filters.extendedTabs.has(6)}
+                        onExpanded={(isExpanded) => {
+                            if(isExpanded) {
+                                filters.extendedTabs.add(6)
+                            } else {
+                                filters.extendedTabs.delete(6)
+                            }
+
+                            filters.syncExtendedTabCookie()
+                            setMinisterialPointFilterChanged(true)
+                        }}
+                    >
+                        {ministerialPointRange}
+                    </FilterViewOption>
+
+                    <FilterViewOption
+                        header="Wydawca"
+                        expanded={filters.extendedTabs.has(7)}
+                        onExpanded={(isExpanded) => {
+                            if(isExpanded) {
+                                filters.extendedTabs.add(7)
+                            } else {
+                                filters.extendedTabs.delete(7)
+                            }
+
+                            filters.syncExtendedTabCookie()
+                            setPublishersFilterChanged(true)
+                        }}
+                    >
+                        {publishersCheckboxes}
+                    </FilterViewOption>
+
+                    <FilterViewOption
+                        header="Rodzaj Publikacji"
+                        expanded={filters.extendedTabs.has(8)}
+                        onExpanded={(isExpanded) => {
+                            if(isExpanded) {
+                                filters.extendedTabs.add(8)
+                            } else {
+                                filters.extendedTabs.delete(8)
+                            }
+
+                            filters.syncExtendedTabCookie()
+                            setJournalFilterChanged(true)
+                        }}
+                    >
+                        {journalTypeCheckboxes}
+                    </FilterViewOption>
 
                     <div className={`bg-black/80 w-full flex-1`}></div>
                 </div>
@@ -655,17 +767,24 @@ async function fetchInitialOrganizationData(): Promise<OrganizationData> {
     const fetchedCathedras: Organization[] = []
     const fetchedInstitutes: Organization[] = []
 
+    const existingItems = new Set<string>()
     for (const org of allOrganizations) {
-        switch (org.type.toLowerCase()) {
-            case "cathedra":
-                fetchedCathedras.push(org)
-                break
-            case "university":
-                fetchedUniversities.push(org)
-                break
-            case "institute":
-                fetchedInstitutes.push(org)
-                break
+        if(!existingItems.has(org.name)) {
+            switch (org.type.toLowerCase()) {
+                case "cathedra":
+                    fetchedCathedras.push(org)
+                    break
+                case "university":
+                    fetchedUniversities.push(org)
+                    break
+                case "institute":
+                    fetchedInstitutes.push(org)
+                    break
+            }
+
+            existingItems.add(org.name)
+        } else {
+            console.log(`Repeat: ${org.name}`)
         }
     }
 

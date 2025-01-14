@@ -332,7 +332,7 @@ export async function fetchSearch(query: SearchQuery): Promise<SearchResponse | 
         queryParams.append("ministerial_score_min", query.ministerialScoreMin.toString())
     }
     if(query.name !== undefined) {
-        queryParams.append("name", query.name)
+        queryParams.append("name", query.name.trim())
     }
     if(query.organizations !== undefined && query.organizations.length > 0) {
         queryParams.append("organizations[]", query.organizations.join(","))
@@ -359,7 +359,7 @@ export async function fetchSearch(query: SearchQuery): Promise<SearchResponse | 
         queryParams.append("research_areas[]", query.researchAreas.join(","))
     }
     if(query.surname !== undefined) {
-        queryParams.append("surname", query.surname)
+        queryParams.append("surname", query.surname.trim())
     }
     if(query.yearScoreFilters !== undefined && query.yearScoreFilters.length > 0) {
         const json = query.yearScoreFilters.map((filter) => {

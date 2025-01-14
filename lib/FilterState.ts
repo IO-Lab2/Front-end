@@ -27,6 +27,8 @@ export class FilterState {
     name?: string
     surname?: string
 
+    extendedTabs: Set<number> = new Set()
+
     copy(): FilterState {
         const copied = new FilterState()
 
@@ -44,6 +46,7 @@ export class FilterState {
         copied.publishers = new Set(this.publishers)
         copied.publicationYears = new Set(this.publicationYears)
         copied.publicationYearFilters = Array.of(...this.publicationYearFilters)
+        copied.extendedTabs = new Set(this.extendedTabs)
 
         copied.name = this.name
         copied.surname = this.surname
@@ -69,7 +72,7 @@ export class FilterState {
         })
     }
 
-    resetFilters(): void {
+    resetFilters(resetTabs?: boolean): void {
         this.universities.clear()
         this.institutes.clear()
         this.cathedras.clear()
@@ -103,6 +106,11 @@ export class FilterState {
         deleteCookie(FilterState.COOKIE_NAME, { sameSite: "strict" })
         deleteCookie(FilterState.COOKIE_SURNAME, { sameSite: "strict" })
         deleteCookie(FilterState.COOKIE_YEAR_SCORE, { sameSite: "strict" })
+
+        if(resetTabs) {
+            this.extendedTabs.clear()
+            deleteCookie(FilterState.COOKIE_EXTENDED_TABS, { sameSite: "strict" })
+        }
     }
 
     hasFilters(): boolean {
@@ -255,6 +263,12 @@ export class FilterState {
         })
     }
 
+    syncExtendedTabCookie() {
+        setCookie(FilterState.COOKIE_EXTENDED_TABS, packCookieSet(this.extendedTabs), {
+            sameSite: "strict"
+        })
+    }
+
     readFromCookies(cookies: { [key: string]: string | undefined }) {
         this.universities = unpackCookie(cookies[FilterState.COOKIE_UNIVERSITIES])
         this.institutes = unpackCookie(cookies[FilterState.COOKIE_INSTITUTES])
@@ -274,6 +288,9 @@ export class FilterState {
         this.ifScore.max = Number(cookies[FilterState.COOKIE_IF_SCORE_MAX]) || undefined
         this.name = cookies[FilterState.COOKIE_NAME]
         this.surname = cookies[FilterState.COOKIE_SURNAME]
+
+        this.extendedTabs = unpackCookie(cookies[FilterState.COOKIE_EXTENDED_TABS])
+        console.log(this.extendedTabs)
     }
 
     static readonly COOKIE_UNIVERSITIES: string = "universities"
@@ -292,4 +309,5 @@ export class FilterState {
     static readonly COOKIE_NAME: string = "name"
     static readonly COOKIE_SURNAME: string = "surname"
     static readonly COOKIE_YEAR_SCORE: string = "yearScore"
+    static readonly COOKIE_EXTENDED_TABS: string = "extendedTabs"
 }
