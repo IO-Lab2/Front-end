@@ -31,6 +31,11 @@ export function FilterRange(props: FilterRangeProps) {
                         if(!isNaN(newMin) && onChange) { onChange(newMin, max) }
                     }
                 }
+                onBlur={() => {
+                    if(min !== undefined && max !== undefined && min > max && onChange) {
+                        onChange(max, max)
+                    }
+                }}
 
                 placeholder={props.defaultMin?.toString()}
                 min={props.defaultMin ?? 0}
@@ -57,6 +62,11 @@ export function FilterRange(props: FilterRangeProps) {
                         if (!isNaN(newMax) && onChange) { onChange(min, newMax) }
                     }
                 }
+                onBlur={() => {
+                    if(min !== undefined && max !== undefined && max < min && onChange) {
+                        onChange(min, min)
+                    }
+                }}
 
                 placeholder={props.defaultMax?.toString()}
                 min={props.defaultMin ?? 0}

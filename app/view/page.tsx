@@ -534,6 +534,20 @@ export default function ViewPage() {
             )
     }, [compareInfo, scientists, scientistsChanged, sortMethod])
 
+    let resultCountSuffix: string
+    switch(totalScientistCount) {
+        case 1:
+            resultCountSuffix = ""
+            break
+        case 2:
+        case 3:
+        case 4:
+            resultCountSuffix = "i"
+            break
+        default:
+            resultCountSuffix = "ów"
+            break
+    }
     return <Toolbar
         highContrastMode={highContrastMode}
         onToggleContrast={
@@ -566,7 +580,7 @@ export default function ViewPage() {
                 </div>
                 <div className={`flex-1`}>
                     <div className={`pl-8 pr-8 p-6 w-full content-center flex flex-col gap-4`}>
-                        <p className={`text-3xl font-[600]`}>{totalScientistCount !== null ? `Znaleziono ${totalScientistCount} wyników wyszukiwania` : `Odświeżam wyniki...`}</p>
+                        <p className={`text-3xl font-[600]`}>{totalScientistCount !== null ? `Znaleziono ${totalScientistCount} wynik${resultCountSuffix} wyszukiwania` : `Odświeżam wyniki...`}</p>
                         <SearchOptions
                             onRefresh={async () => {
                                 setScientists(null)

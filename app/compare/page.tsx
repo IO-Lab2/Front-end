@@ -12,10 +12,7 @@ import {
 } from "@/lib/API";
 import ScientistCompareCard, {ScientistMinMax} from "@/components/ScientistCompareCard";
 import {useRouter, useSearchParams} from "next/navigation";
-import dynamic from "next/dynamic";
-import {ContrastState} from "@/components/Toolbar";
-
-const Toolbar = dynamic(() => import("@/components/Toolbar"), {ssr: false})
+import Toolbar, {ContrastState} from "@/components/Toolbar";
 
 interface ScientistOrgs {
     [key: string]: Organization[]

@@ -33,6 +33,6 @@ export class CompareState {
     }
 
     static readonly COOKIE_COMPARE: string = "compare"
-    static readonly LIMIT: number = 8
+    static readonly LIMIT: number = 10
 }
 
