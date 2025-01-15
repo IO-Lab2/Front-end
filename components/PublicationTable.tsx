@@ -44,7 +44,7 @@ export default function PublicationTable(props: PublicationTableProps) {
                             publication.journal_type
                                 ? <>
                                     <span className={`ml-2 mr-2`}>&#8226;</span>
-                                    <span className={`capitalize`}>{publication.journal_type}</span>
+                                    <span>{publication.journal_type}</span>
                                 </>
                                 : null
                         }

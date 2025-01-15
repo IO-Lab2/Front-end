@@ -21,7 +21,7 @@ export function ScientistCell(props: ScientistCellProps) {
         return researchAreas.map((area, index) => {
             const name = area.name
             const suffix = index != 0 ? ", " : ""
-            return <span key={name} className={`capitalize`}>{suffix}{name}</span>
+            return <span key={name}>{suffix}{name}</span>
         })
     }, [props.scientist])
 

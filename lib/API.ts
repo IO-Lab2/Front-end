@@ -1,5 +1,7 @@
 import {UUID} from "node:crypto";
 
+export type OrganizationType = "uczelnia" | "instytut" | "katedra" | "wydział"
+
 /** API reference: <https://api.epickaporownywarkabazwiedzyuczelni.rocks/docs#/schemas/OrganizationBody> */
 export interface Organization {
     /** Organization ID */
@@ -7,7 +9,7 @@ export interface Organization {
     /** Name of the organization */
     name: string,
     /** Type of the organization */
-    type: string,
+    type: OrganizationType,
 }
 
 /** API reference: <https://api.epickaporownywarkabazwiedzyuczelni.rocks/docs#/schemas/Bibliometrics> */
@@ -124,7 +126,7 @@ export async function fetchGetOrganizationsTree(id: UUID | null): Promise<GetOrg
 
         return await fetch("https://api.epickaporownywarkabazwiedzyuczelni.rocks/api/filters/organizations-tree?" + queryParams, {
             method: "GET",
-            cache: "force-cache",
+            cache: "force-cache"
         }).then(res => res.json())
     } catch(ex) {
         console.error(`Nie udało się pobrać danych o drzewie organizacji (root: ${id ?? "null"}): ${ex}`)
@@ -136,7 +138,7 @@ export async function fetchGetOrganizationsFilter(): Promise<GetOrganizationsFil
     try {
         return await fetch("https://api.epickaporownywarkabazwiedzyuczelni.rocks/api/filters/organizations", {
             method: "GET",
-            cache: "force-cache",
+            cache: "force-cache"
         }).then(res => res.json())
     } catch(ex) {
         console.error(`Nie udało się pobrać danych o organizacjach: ${ex}`)
@@ -148,7 +150,7 @@ export async function fetchPublicationCountRange(): Promise<APIRange> {
     try {
         return await fetch("https://api.epickaporownywarkabazwiedzyuczelni.rocks/api/filters/publication-counts", {
             method: "GET",
-            cache: "force-cache",
+            cache: "force-cache"
         }).then(res => res.json())
     } catch(ex) {
         console.error(`Nie udało się pobrać zakresu ilości publikacji: ${ex}`)
@@ -159,7 +161,7 @@ export async function fetchMinisterialScoresRange(): Promise<APIRange> {
     try {
         return await fetch("https://api.epickaporownywarkabazwiedzyuczelni.rocks/api/filters/ministerial-scores", {
             method: "GET",
-            cache: "force-cache",
+            cache: "force-cache"
         }).then(res => res.json())
     } catch(ex) {
         console.error(`Nie udało się pobrać zakresu punktów ministerialnych: ${ex}`)

@@ -784,15 +784,18 @@ async function fetchInitialOrganizationData(): Promise<OrganizationData> {
     const existingItems = new Set<string>()
     for (const org of allOrganizations) {
         if(!existingItems.has(org.name)) {
-            switch (org.type.toLowerCase()) {
-                case "cathedra":
+            switch (org.type) {
+                case "katedra":
                     fetchedCathedras.push(org)
                     break
-                case "university":
+                case "uczelnia":
                     fetchedUniversities.push(org)
                     break
-                case "institute":
+                case "instytut":
                     fetchedInstitutes.push(org)
+                    break
+                case "wydział":
+                    // ?
                     break
             }
 
