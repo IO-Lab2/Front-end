@@ -3,19 +3,19 @@
 import {FilterViewOption} from "@/components/FilterViewOption";
 import {ScientistCell} from "@/components/ScientistCell";
 import {
-    APIRange,
-    fetchGetOrganizationsFilter,
+    APIRange, fetchAcademicTitles,
+    fetchGetOrganizationsFilter, fetchImpactFactorRange,
     fetchJournalTypes,
     fetchMinisterialScoresRange,
     fetchPositions,
     fetchPublicationCountRange,
     fetchPublicationYears,
-    fetchPublishers,
+    fetchPublishers, fetchResearchAreas,
     Organization,
     Scientist,
     SearchResponse,
 } from "@/lib/API";
-import {useEffect, useMemo, useRef, useState} from "react";
+import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {SearchOptions, SortMethod} from "@/components/SearchOptions";
 import {FilterState} from "@/lib/FilterState";
 import {getCookies} from "cookies-next/client";
@@ -34,12 +34,16 @@ class OrganizationData {
     universities: Organization[] = []
     cathedras: Organization[] = []
     institutes: Organization[] = []
+    departments: Organization[] = []
 
     publicationCount: { min?: number, max?: number } = {}
     ministerialPoints: { min?: number, max?: number } = {}
+    impactFactor: { min?: number, max?: number } = {}
 
     positions: string[] = []
     publishers: string[] = []
+    academicTitles: string[] = []
+    researchAreas: string[] = []
 
     publicationYears: number[] = []
     journalTypes: string[] = []
@@ -51,7 +55,8 @@ class OrganizationData {
 enum UsedOrganization {
     university,
     cathedra,
-    institute
+    institute,
+    department
 }
 
 export default function ViewPage() {
@@ -71,6 +76,7 @@ export default function ViewPage() {
         const state = new CompareState()
         state.readFromCookies(getCookies() ?? {})
         console.log("Reading comparison info from cookies...")
+        state.syncCookie()
 
         return state
     }, [])
@@ -91,9 +97,13 @@ export default function ViewPage() {
     const [uniFilterChanged, setUniFilterChanged] = useState<boolean>(true)
     const [instituteFilterChanged, setInstituteFilterChanged] = useState<boolean>(true)
     const [cathedraFilterChanged, setCathedraFilterChanged] = useState<boolean>(true)
+    const [departmentFilterChanged, setDepartmentFilterChanged] = useState<boolean>(true)
+    const [academicTitleFilterChanged, setAcademicTitleFilterChanged] = useState<boolean>(true)
+    const [researchAreasFilterChanged, setResearchAreasFilterChanged] = useState<boolean>(true)
     const [positionFilterChanged, setPositionFilterChanged] = useState<boolean>(true)
     const [publicationCountFilterChanged, setPublicationCountFilterChanged] = useState<boolean>(true)
     const [ministerialPointFilterChanged, setMinisterialPointFilterChanged] = useState<boolean>(true)
+    const [ifScoreFilterChanged, setIfScoreFilterChanged] = useState<boolean>(true)
     const [publishersFilterChanged, setPublishersFilterChanged] = useState<boolean>(true)
     const [journalFilterChanged, setJournalFilterChanged] = useState<boolean>(true)
     const [scientistsChanged, setScientistsChanged] = useState<boolean>(true)
@@ -116,6 +126,11 @@ export default function ViewPage() {
                 setCathedraFilterChanged(true)
                 filters.syncCathedraCookie()
             }
+            if(usedOrg != UsedOrganization.department) {
+                filters.departments.clear()
+                setDepartmentFilterChanged(true)
+                filters.syncDepartmentCookie()
+            }
         }
     }, [filters, usedOrg])
 
@@ -123,11 +138,27 @@ export default function ViewPage() {
     useEffect(() => {
         (async function () {
             const filters = new FilterState()
-
             filters.readFromCookies(getCookies() ?? {})
             console.log("Reading filters from cookies...")
 
             const fetchedOrgData = await fetchInitialOrganizationData()
+
+            const initialUsedOrganization =
+                filters.departments.size > 0
+                    ? UsedOrganization.department
+                    : filters.cathedras.size > 0
+                        ? UsedOrganization.cathedra
+                        : filters.institutes.size > 0
+                            ? UsedOrganization.institute
+                            : UsedOrganization.university
+
+            previousFilters.current = filters.copy()
+
+            setUsedOrg(initialUsedOrganization)
+            setFilters(filters)
+            setHasFilters(filters.hasFilters())
+            setOrgData(fetchedOrgData)
+
             const searchResponse: SearchResponse | null = await filters.search(perPageLimit)
 
             const scientists = searchResponse?.scientists ?? []
@@ -138,22 +169,8 @@ export default function ViewPage() {
 
             setPageCount(pageCount)
             setCurrentPage(selectedPage)
-
-            setFilters(filters)
-            setOrgData(fetchedOrgData)
             setScientists(scientists)
             setTotalScientistCount(scientistCount)
-
-            const initialUsedOrganization =
-                filters.cathedras.size > 0
-                    ? UsedOrganization.cathedra
-                    : filters.institutes.size > 0
-                        ? UsedOrganization.institute
-                        : UsedOrganization.university
-
-            setUsedOrg(initialUsedOrganization)
-            previousFilters.current = filters.copy()
-            setHasFilters(filters.hasFilters())
         })()
     }, [])
 
@@ -279,6 +296,35 @@ export default function ViewPage() {
             />
         }) ?? []
     }, [filters, cathedraFilterChanged, orgData])
+
+    const departmentCheckboxes = useMemo(() => {
+        setDepartmentFilterChanged(false)
+
+        return orgData?.departments.map((department, index) => {
+            return <FilterCheckbox
+                key={index}
+                label={department.name}
+                isChecked={filters.departments.has(decodeURI(department.name))}
+                onChoice={(isChecked: boolean) => {
+                    if (isChecked) {
+                        filters.departments.add(department.name)
+                        console.log(`Added department filter: ${department.name}`)
+                    } else {
+                        filters.departments.delete(department.name)
+                        console.log(`Removed department filter: ${department.name}`)
+                    }
+
+                    setUsedOrg(UsedOrganization.department)
+                    filters.syncDepartmentCookie()
+
+                    setHasFilters(true)
+                    if (!departmentFilterChanged) {
+                        setDepartmentFilterChanged(true)
+                    }
+                }}
+            />
+        }) ?? []
+    }, [filters, departmentFilterChanged, orgData])
 
     const positionCheckboxes = useMemo(() => {
         setPositionFilterChanged(false)
@@ -410,6 +456,34 @@ export default function ViewPage() {
         </div>
     }, [highContrastMode, filters, ministerialPointFilterChanged, orgData])
 
+    const academicTitleCheckboxes = useMemo(() => {
+        setAcademicTitleFilterChanged(false)
+
+        return orgData?.academicTitles.map((title) => {
+            return <FilterCheckbox
+                key={title}
+                label={title}
+                isChecked={filters.academicTitles.has(decodeURI(title))}
+                onChoice={(isChecked) => {
+                    if (isChecked) {
+                        filters.academicTitles.add(title)
+                        console.log(`Added academic title filter: ${title}`)
+                    } else {
+                        filters.academicTitles.delete(title)
+                        console.log(`Removed academic title filter: ${title}`)
+                    }
+
+                    filters.syncAcademicTitleCookie()
+
+                    setHasFilters(true)
+                    if (!academicTitleFilterChanged) {
+                        setAcademicTitleFilterChanged(true)
+                    }
+                }}
+            />
+        }) ?? []
+    }, [filters, academicTitleFilterChanged, orgData])
+
     const publishersCheckboxes = useMemo(() => {
         setPublishersFilterChanged(false)
 
@@ -466,6 +540,56 @@ export default function ViewPage() {
         }) ?? []
     }, [filters, journalFilterChanged, orgData])
 
+    const researchAreaCheckboxes = useMemo(() => {
+        setResearchAreasFilterChanged(false)
+
+        return orgData?.researchAreas.map((researchArea) => {
+            return <FilterCheckbox
+                key={researchArea}
+                label={researchArea}
+                isChecked={filters.researchAreas.has(decodeURI(researchArea))}
+                onChoice={(isChecked) => {
+                    if (isChecked) {
+                        filters.researchAreas.add(researchArea)
+                        console.log(`Added research area filter: ${researchArea}`)
+                    } else {
+                        filters.researchAreas.delete(researchArea)
+                        console.log(`Removed research area filter: ${researchArea}`)
+                    }
+
+                    filters.syncResearchAreaCookie()
+
+                    setHasFilters(true)
+                    if (!researchAreasFilterChanged) {
+                        setResearchAreasFilterChanged(true)
+                    }
+                }}
+            />
+        }) ?? []
+    }, [filters, researchAreasFilterChanged, orgData])
+
+    const ifScoreFilterRange = useMemo(() => {
+        setIfScoreFilterChanged(false)
+
+        return <FilterRange
+            defaultMin={orgData?.impactFactor.min}
+            defaultMax={orgData?.impactFactor.max}
+            min={filters.ifScore.min}
+            max={filters.ifScore.max}
+            onChange={(min, max) => {
+                filters.ifScore.min = min || undefined
+                filters.ifScore.max = max || undefined
+
+                filters.syncIFScoreCookie()
+
+                setHasFilters(true)
+                if (!ifScoreFilterChanged) {
+                    setIfScoreFilterChanged(true)
+                }
+            }}
+        />
+    }, [filters, ifScoreFilterChanged, orgData])
+
     const scientistCells = useMemo(() => {
         setScientistsChanged(false)
 
@@ -514,18 +638,48 @@ export default function ViewPage() {
 
     let resultCountSuffix: string
     switch((totalScientistCount ?? 0) % 10) {
-        case 1:
-            resultCountSuffix = ""
-            break
         case 2:
         case 3:
         case 4:
             resultCountSuffix = "i"
             break
+        case 1:
+            if(totalScientistCount == 1) {
+                resultCountSuffix = ""
+                break
+            }
+            // fallthrough
         default:
             resultCountSuffix = "ów"
             break
     }
+
+    const refreshCallback = useCallback(async () => {
+        setScientists(null)
+        setTotalScientistCount(null)
+        previousFilters.current = filters.copy()
+
+        const result: SearchResponse | null = await filters.search(perPageLimit)
+
+        if (result) {
+            const count = result.count ?? 0
+
+            const pageCount = Math.ceil(count / perPageLimit)
+            const selectedPage = pageCount == 0 ? 0 : 1
+
+            setScientists(result.scientists ?? [])
+            setTotalScientistCount(count)
+
+            setPageCount(pageCount)
+            setCurrentPage(selectedPage)
+        } else {
+            setScientists([])
+            setTotalScientistCount(0)
+            setPageCount(0)
+            setCurrentPage(0)
+        }
+    }, [filters])
+
     return <Toolbar
         highContrastMode={highContrastMode}
         onToggleContrast={
@@ -612,6 +766,23 @@ export default function ViewPage() {
                     </FilterViewOption>
 
                     <FilterViewOption
+                        header="Wydział"
+                        expanded={filters.extendedTabs.has(10)}
+                        onExpanded={(isExpanded) => {
+                            if(isExpanded) {
+                                filters.extendedTabs.add(10)
+                            } else {
+                                filters.extendedTabs.delete(10)
+                            }
+
+                            filters.syncExtendedTabCookie()
+                            setDepartmentFilterChanged(true)
+                        }}
+                    >
+                        {departmentCheckboxes}
+                    </FilterViewOption>
+
+                    <FilterViewOption
                         header="Stanowisko"
                         expanded={filters.extendedTabs.has(4)}
                         onExpanded={(isExpanded) => {
@@ -626,6 +797,40 @@ export default function ViewPage() {
                         }}
                     >
                         {positionCheckboxes}
+                    </FilterViewOption>
+
+                    <FilterViewOption
+                        header="Tytuł Akademicki"
+                        expanded={filters.extendedTabs.has(11)}
+                        onExpanded={(isExpanded) => {
+                            if(isExpanded) {
+                                filters.extendedTabs.add(11)
+                            } else {
+                                filters.extendedTabs.delete(11)
+                            }
+
+                            filters.syncExtendedTabCookie()
+                            setAcademicTitleFilterChanged(true)
+                        }}
+                    >
+                        {academicTitleCheckboxes}
+                    </FilterViewOption>
+
+                    <FilterViewOption
+                        header="Dziedzina Nauki"
+                        expanded={filters.extendedTabs.has(12)}
+                        onExpanded={(isExpanded) => {
+                            if(isExpanded) {
+                                filters.extendedTabs.add(12)
+                            } else {
+                                filters.extendedTabs.delete(12)
+                            }
+
+                            filters.syncExtendedTabCookie()
+                            setResearchAreasFilterChanged(true)
+                        }}
+                    >
+                        {researchAreaCheckboxes}
                     </FilterViewOption>
 
                     <FilterViewOption
@@ -663,13 +868,30 @@ export default function ViewPage() {
                     </FilterViewOption>
 
                     <FilterViewOption
-                        header="Wydawca"
+                        header="Współczynnik Impact Factor"
                         expanded={filters.extendedTabs.has(7)}
                         onExpanded={(isExpanded) => {
                             if(isExpanded) {
                                 filters.extendedTabs.add(7)
                             } else {
                                 filters.extendedTabs.delete(7)
+                            }
+
+                            filters.syncExtendedTabCookie()
+                            setIfScoreFilterChanged(true)
+                        }}
+                    >
+                        {ifScoreFilterRange}
+                    </FilterViewOption>
+
+                    <FilterViewOption
+                        header="Wydawca"
+                        expanded={filters.extendedTabs.has(8)}
+                        onExpanded={(isExpanded) => {
+                            if(isExpanded) {
+                                filters.extendedTabs.add(8)
+                            } else {
+                                filters.extendedTabs.delete(8)
                             }
 
                             filters.syncExtendedTabCookie()
@@ -681,12 +903,12 @@ export default function ViewPage() {
 
                     <FilterViewOption
                         header="Rodzaj Publikacji"
-                        expanded={filters.extendedTabs.has(8)}
+                        expanded={filters.extendedTabs.has(9)}
                         onExpanded={(isExpanded) => {
                             if(isExpanded) {
-                                filters.extendedTabs.add(8)
+                                filters.extendedTabs.add(9)
                             } else {
-                                filters.extendedTabs.delete(8)
+                                filters.extendedTabs.delete(9)
                             }
 
                             filters.syncExtendedTabCookie()
@@ -702,31 +924,14 @@ export default function ViewPage() {
                     <div className={`pl-8 pr-8 p-6 w-full content-center flex flex-col gap-4`}>
                         <p className={`text-3xl font-[600]`}>{totalScientistCount !== null ? `Znaleziono ${totalScientistCount} wynik${resultCountSuffix} wyszukiwania` : `Odświeżam wyniki...`}</p>
                         <SearchOptions
-                            onRefresh={async () => {
-                                setScientists(null)
-                                setTotalScientistCount(null)
-                                previousFilters.current = filters.copy()
-
-                                const result: SearchResponse | null = await filters.search(perPageLimit)
-
-                                if (result) {
-                                    const count = result.count ?? 0
-
-                                    const pageCount = Math.ceil(count / perPageLimit)
-                                    const selectedPage = pageCount == 0 ? 0 : 1
-
-                                    setScientists(result.scientists ?? [])
-                                    setTotalScientistCount(count)
-
-                                    setPageCount(pageCount)
-                                    setCurrentPage(selectedPage)
-                                }
-                            }}
+                            onRefresh={refreshCallback}
                             canResetFilters={hasFilters}
                             onFilterReset={() => {
                                 filters.resetFilters()
                                 setFilters(filters.copy())
                                 setHasFilters(false)
+
+                                refreshCallback().then()
                             }}
                             sortMethod={sortMethod}
                             onSortMethodChange={(sortMethod) => {
@@ -774,19 +979,23 @@ async function fetchInitialOrganizationData(): Promise<OrganizationData> {
     const fetchedUniversities: Organization[] = []
     const fetchedCathedras: Organization[] = []
     const fetchedInstitutes: Organization[] = []
+    const fetchedDepartments: Organization[] = []
 
     const existingItems = new Set<string>()
     for (const org of allOrganizations) {
         if(!existingItems.has(org.name)) {
-            switch (org.type.toLowerCase()) {
-                case "cathedra":
+            switch (org.type) {
+                case "katedra":
                     fetchedCathedras.push(org)
                     break
-                case "university":
+                case "uczelnia":
                     fetchedUniversities.push(org)
                     break
-                case "institute":
+                case "instytut":
                     fetchedInstitutes.push(org)
+                    break
+                case "wydział":
+                    fetchedDepartments.push(org)
                     break
             }
 
@@ -798,12 +1007,15 @@ async function fetchInitialOrganizationData(): Promise<OrganizationData> {
 
     const publicationCountRange: APIRange = await fetchPublicationCountRange()
     const ministerialPointRange: APIRange = await fetchMinisterialScoresRange()
+    const impactFactorRange: APIRange = await fetchImpactFactorRange()
 
     // HACK: API gives some empty strings for some reason. Just filter them out since you can't search for these anyways (?)
     const publishers: string[] = (await fetchPublishers()).filter((x) => x != " " && x != "")
     const positions: string[] = (await fetchPositions()).filter((x) => x != " " && x != "")
     const journalTypes: string[] = await fetchJournalTypes()
     const publicationYears: number[] = await fetchPublicationYears()
+    const academicTitles: string[] = await fetchAcademicTitles()
+    const researchAreas: string[] = (new Set(await fetchResearchAreas())).values().toArray() // HACK: some values are duplicated? for some reason?
 
     fetchedUniversities.sort((left, right) => {
         return left.name.localeCompare(right.name)
@@ -812,6 +1024,9 @@ async function fetchInitialOrganizationData(): Promise<OrganizationData> {
         return left.name.localeCompare(right.name)
     })
     fetchedInstitutes.sort((left, right) => {
+        return left.name.localeCompare(right.name)
+    })
+    fetchedDepartments.sort((left, right) => {
         return left.name.localeCompare(right.name)
     })
     publishers.sort((left, right) => {
@@ -823,20 +1038,31 @@ async function fetchInitialOrganizationData(): Promise<OrganizationData> {
     journalTypes.sort((left, right) => {
         return left.localeCompare(right)
     })
+    academicTitles.sort((left, right) => {
+        return left.localeCompare(right)
+    })
+    researchAreas.sort((left, right) => {
+        return left.localeCompare(right)
+    })
     publicationYears.sort().reverse()
 
     const fetchedOrgData = new OrganizationData()
     fetchedOrgData.universities = fetchedUniversities
     fetchedOrgData.cathedras = fetchedCathedras
     fetchedOrgData.institutes = fetchedInstitutes
+    fetchedOrgData.departments = fetchedDepartments
     fetchedOrgData.journalTypes = journalTypes
+    fetchedOrgData.academicTitles = academicTitles
     fetchedOrgData.ministerialPoints.max = ministerialPointRange.largest
     fetchedOrgData.ministerialPoints.min = ministerialPointRange.smallest
     fetchedOrgData.publicationCount.max = publicationCountRange.largest
     fetchedOrgData.publicationCount.min = publicationCountRange.smallest
+    fetchedOrgData.impactFactor.max = impactFactorRange.largest
+    fetchedOrgData.impactFactor.min = impactFactorRange.smallest
     fetchedOrgData.publicationYears = publicationYears
     fetchedOrgData.publishers = publishers
     fetchedOrgData.positions = positions
+    fetchedOrgData.researchAreas = researchAreas
 
     return fetchedOrgData
 }

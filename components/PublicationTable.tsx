@@ -12,7 +12,7 @@ export default function PublicationTable(props: PublicationTableProps) {
     const highContrastMode = useContext(ContrastState)
 
     return <div>
-        <div className={`p-4 rounded-t-2xl ${highContrastMode ? "bg-black text-white" : "bg-black/80 text-basetext"} text-center text-2xl font-bold`}>
+        <div className={`p-4 ${props.publications.length > 0 ? "rounded-t-2xl" : "rounded-2xl"} ${highContrastMode ? "bg-black text-white" : "bg-black/80 text-basetext"} text-center text-2xl font-bold`}>
             Publikacje ({props.publications.length}):
         </div>
         <div>
@@ -44,7 +44,7 @@ export default function PublicationTable(props: PublicationTableProps) {
                             publication.journal_type
                                 ? <>
                                     <span className={`ml-2 mr-2`}>&#8226;</span>
-                                    <span className={`capitalize`}>{publication.journal_type}</span>
+                                    <span>{publication.journal_type}</span>
                                 </>
                                 : null
                         }

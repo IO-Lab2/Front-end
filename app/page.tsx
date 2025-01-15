@@ -8,7 +8,7 @@ import {setCookie} from "cookies-next/client";
 import {FilterState} from "@/lib/FilterState";
 import {UUID} from "node:crypto";
 import {Organization} from "@/lib/API";
-import Toolbar from "@/components/Toolbar";
+import Toolbar, {ContrastState} from "@/components/Toolbar";
 
 export default function Home() {
     const router = useRouter()
@@ -33,7 +33,7 @@ export default function Home() {
                 </div>
                 <div>
                     <h4 className={`font-playfair font-extrabold text-black text-center text-2xl`}>
-                        Twoje centrum wiedzy akademickiej - znajdź publikacje, profesorów i badania w jednym
+                        Twoje centrum wiedzy akademickiej - znajdź publikacje, naukowców i badania w jednym
                         miejscu!
                     </h4>
                 </div>
@@ -55,10 +55,10 @@ export default function Home() {
     } else {
         pageContents = <>
             <FilterHeaderTable
-                header={`Wybierz Instytut:`}
+                header={`Wybierz organizację:`}
                 parentOrg={universityChoice ?? undefined}
                 onChoice={(org: Organization) => {
-                    console.log(`Wybrano instytut: ${org.name}`)
+                    console.log(`Wybrano organizację: ${org.name}`)
                     setCookie(FilterState.COOKIE_INSTITUTES, JSON.stringify([org.name]), {
                         sameSite: "strict"
                     })
@@ -90,11 +90,13 @@ export default function Home() {
         >
             <div className={`w-4/6 h-fit m-auto`}>
                 <div className={`mt-10 mb-10`}>
-                    {pageContents}
-                    <SkipFilterButton onClick={() => {
-                        const contrast = highContrastMode ? "?highContrast=1" : ""
-                        router.push("/view" + contrast)
-                    }}/>
+                    <ContrastState.Provider value={highContrastMode}>
+                        {pageContents}
+                        <SkipFilterButton onClick={() => {
+                            const contrast = highContrastMode ? "?highContrast=1" : ""
+                            router.push("/view" + contrast)
+                        }}/>
+                    </ContrastState.Provider>
                 </div>
             </div>
         </Toolbar>

@@ -21,7 +21,7 @@ export function ScientistCell(props: ScientistCellProps) {
         return researchAreas.map((area, index) => {
             const name = area.name
             const suffix = index != 0 ? ", " : ""
-            return <span key={name} className={`capitalize`}>{suffix}{name}</span>
+            return <span key={name}>{suffix}{name}</span>
         })
     }, [props.scientist])
 
@@ -31,7 +31,7 @@ export function ScientistCell(props: ScientistCellProps) {
     const onSelectForComparison = props.onSelectForComparison
 
     return (
-        <div className={`p-12 w-full h-72 even:bg-white/30 flex gap-4 ${highContrastMode ? "border-2 border-black": ""}`}>
+        <div className={`p-12 w-full h-72 even:bg-white/30 flex gap-4 ${highContrastMode ? "border-t-2 border-l-2 border-r-2 last:border-b-2 border-black": ""}`}>
             <div className={`w-60 flex-shrink-0 flex content-center justify-center`}>
                 <div
                     className={`m-auto h-full aspect-square cursor-pointer`}
