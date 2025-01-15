@@ -4,7 +4,7 @@ import {FilterViewOption} from "@/components/FilterViewOption";
 import {ScientistCell} from "@/components/ScientistCell";
 import {
     APIRange,
-    fetchGetOrganizationsFilter,
+    fetchGetOrganizationsFilter, fetchImpactFactorRange,
     fetchJournalTypes,
     fetchMinisterialScoresRange,
     fetchPositions,
@@ -37,6 +37,7 @@ class OrganizationData {
 
     publicationCount: { min?: number, max?: number } = {}
     ministerialPoints: { min?: number, max?: number } = {}
+    impactFactor: { min?: number, max?: number } = {}
 
     positions: string[] = []
     publishers: string[] = []
@@ -95,6 +96,7 @@ export default function ViewPage() {
     const [positionFilterChanged, setPositionFilterChanged] = useState<boolean>(true)
     const [publicationCountFilterChanged, setPublicationCountFilterChanged] = useState<boolean>(true)
     const [ministerialPointFilterChanged, setMinisterialPointFilterChanged] = useState<boolean>(true)
+    const [ifScoreFilterChanged, setIfScoreFilterChanged] = useState<boolean>(true)
     const [publishersFilterChanged, setPublishersFilterChanged] = useState<boolean>(true)
     const [journalFilterChanged, setJournalFilterChanged] = useState<boolean>(true)
     const [scientistsChanged, setScientistsChanged] = useState<boolean>(true)
@@ -467,6 +469,28 @@ export default function ViewPage() {
         }) ?? []
     }, [filters, journalFilterChanged, orgData])
 
+    const ifScoreFilterRange = useMemo(() => {
+        setIfScoreFilterChanged(false)
+
+        return <FilterRange
+            defaultMin={orgData?.impactFactor.min}
+            defaultMax={orgData?.impactFactor.max}
+            min={filters.ifScore.min}
+            max={filters.ifScore.max}
+            onChange={(min, max) => {
+                filters.ifScore.min = min || undefined
+                filters.ifScore.max = max || undefined
+
+                filters.syncIFScoreCookie()
+
+                setHasFilters(true)
+                if (!ifScoreFilterChanged) {
+                    setIfScoreFilterChanged(true)
+                }
+            }}
+        />
+    }, [filters, ifScoreFilterChanged, orgData])
+
     const scientistCells = useMemo(() => {
         setScientistsChanged(false)
 
@@ -689,13 +713,30 @@ export default function ViewPage() {
                     </FilterViewOption>
 
                     <FilterViewOption
-                        header="Wydawca"
+                        header="Współczynnik Impact Factor"
                         expanded={filters.extendedTabs.has(7)}
                         onExpanded={(isExpanded) => {
                             if(isExpanded) {
                                 filters.extendedTabs.add(7)
                             } else {
                                 filters.extendedTabs.delete(7)
+                            }
+
+                            filters.syncExtendedTabCookie()
+                            setIfScoreFilterChanged(true)
+                        }}
+                    >
+                        {ifScoreFilterRange}
+                    </FilterViewOption>
+
+                    <FilterViewOption
+                        header="Wydawca"
+                        expanded={filters.extendedTabs.has(8)}
+                        onExpanded={(isExpanded) => {
+                            if(isExpanded) {
+                                filters.extendedTabs.add(8)
+                            } else {
+                                filters.extendedTabs.delete(8)
                             }
 
                             filters.syncExtendedTabCookie()
@@ -707,12 +748,12 @@ export default function ViewPage() {
 
                     <FilterViewOption
                         header="Rodzaj Publikacji"
-                        expanded={filters.extendedTabs.has(8)}
+                        expanded={filters.extendedTabs.has(9)}
                         onExpanded={(isExpanded) => {
                             if(isExpanded) {
-                                filters.extendedTabs.add(8)
+                                filters.extendedTabs.add(9)
                             } else {
-                                filters.extendedTabs.delete(8)
+                                filters.extendedTabs.delete(9)
                             }
 
                             filters.syncExtendedTabCookie()
@@ -810,6 +851,7 @@ async function fetchInitialOrganizationData(): Promise<OrganizationData> {
 
     const publicationCountRange: APIRange = await fetchPublicationCountRange()
     const ministerialPointRange: APIRange = await fetchMinisterialScoresRange()
+    const impactFactorRange: APIRange = await fetchImpactFactorRange()
 
     // HACK: API gives some empty strings for some reason. Just filter them out since you can't search for these anyways (?)
     const publishers: string[] = (await fetchPublishers()).filter((x) => x != " " && x != "")
@@ -846,6 +888,8 @@ async function fetchInitialOrganizationData(): Promise<OrganizationData> {
     fetchedOrgData.ministerialPoints.min = ministerialPointRange.smallest
     fetchedOrgData.publicationCount.max = publicationCountRange.largest
     fetchedOrgData.publicationCount.min = publicationCountRange.smallest
+    fetchedOrgData.impactFactor.max = impactFactorRange.largest
+    fetchedOrgData.impactFactor.min = impactFactorRange.smallest
     fetchedOrgData.publicationYears = publicationYears
     fetchedOrgData.publishers = publishers
     fetchedOrgData.positions = positions

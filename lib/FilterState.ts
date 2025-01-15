@@ -63,6 +63,8 @@ export class FilterState {
             ministerialScoreMin: this.ministerialPoints.min || undefined,
             publicationsMax: this.publicationCount.max || undefined,
             publicationsMin: this.publicationCount.min || undefined,
+            ifScoreMax: this.ifScore.max || undefined,
+            ifScoreMin: this.ifScore.min || undefined,
             publishers: this.publishers.values().toArray(),
             positions: this.positions.values().toArray(),
             name: this.name,
@@ -243,6 +245,28 @@ export class FilterState {
         setCookie(FilterState.COOKIE_PUBLISHERS, packCookieSet(this.publishers), {
             sameSite: "strict"
         })
+    }
+
+    syncIFScoreCookie() {
+        if(this.ifScore.min !== undefined) {
+            setCookie(FilterState.COOKIE_IF_SCORE_MIN, this.ifScore.min, {
+                sameSite: "strict"
+            })
+        } else {
+            deleteCookie(FilterState.COOKIE_IF_SCORE_MIN, {
+                sameSite: "strict"
+            })
+        }
+
+        if(this.ifScore.max !== undefined) {
+            setCookie(FilterState.COOKIE_IF_SCORE_MAX, this.ifScore.max, {
+                sameSite: "strict"
+            })
+        } else {
+            deleteCookie(FilterState.COOKIE_IF_SCORE_MAX, {
+                sameSite: "strict"
+            })
+        }
     }
 
     syncPublicationYearCookie() {

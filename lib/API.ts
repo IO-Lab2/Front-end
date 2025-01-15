@@ -77,6 +77,8 @@ export interface SearchQuery {
     positions?: string[],
     publicationsMax?: number,
     publicationsMin?: number,
+    ifScoreMin?: number,
+    ifScoreMax?: number,
     publicationYears?: number[],
     publishers?: string[],
     researchAreas?: string[],
@@ -165,6 +167,17 @@ export async function fetchMinisterialScoresRange(): Promise<APIRange> {
         }).then(res => res.json())
     } catch(ex) {
         console.error(`Nie udało się pobrać zakresu punktów ministerialnych: ${ex}`)
+        return { largest: 0, smallest: 0 }
+    }
+}
+export async function fetchImpactFactorRange(): Promise<APIRange> {
+    try {
+        return await fetch("https://api.epickaporownywarkabazwiedzyuczelni.rocks/api/filters/impact-factors", {
+            method: "GET",
+            cache: "force-cache"
+        }).then(res => res.json())
+    } catch(ex) {
+        console.error(`Nie udało się pobrać zakresu wyniku impact factor: ${ex}`)
         return { largest: 0, smallest: 0 }
     }
 }
