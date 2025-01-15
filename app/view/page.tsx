@@ -126,11 +126,25 @@ export default function ViewPage() {
     useEffect(() => {
         (async function () {
             const filters = new FilterState()
-
             filters.readFromCookies(getCookies() ?? {})
             console.log("Reading filters from cookies...")
 
             const fetchedOrgData = await fetchInitialOrganizationData()
+
+            const initialUsedOrganization =
+                filters.cathedras.size > 0
+                    ? UsedOrganization.cathedra
+                    : filters.institutes.size > 0
+                        ? UsedOrganization.institute
+                        : UsedOrganization.university
+
+            previousFilters.current = filters.copy()
+
+            setUsedOrg(initialUsedOrganization)
+            setFilters(filters)
+            setHasFilters(filters.hasFilters())
+            setOrgData(fetchedOrgData)
+
             const searchResponse: SearchResponse | null = await filters.search(perPageLimit)
 
             const scientists = searchResponse?.scientists ?? []
@@ -141,22 +155,8 @@ export default function ViewPage() {
 
             setPageCount(pageCount)
             setCurrentPage(selectedPage)
-
-            setFilters(filters)
-            setOrgData(fetchedOrgData)
             setScientists(scientists)
             setTotalScientistCount(scientistCount)
-
-            const initialUsedOrganization =
-                filters.cathedras.size > 0
-                    ? UsedOrganization.cathedra
-                    : filters.institutes.size > 0
-                        ? UsedOrganization.institute
-                        : UsedOrganization.university
-
-            setUsedOrg(initialUsedOrganization)
-            previousFilters.current = filters.copy()
-            setHasFilters(filters.hasFilters())
         })()
     }, [])
 
