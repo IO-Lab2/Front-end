@@ -6,6 +6,7 @@ export class FilterState {
     universities: Set<string> = new Set()
     institutes: Set<string> = new Set()
     cathedras: Set<string> = new Set()
+    departments: Set<string> = new Set()
     positions: Set<string> = new Set()
     ministerialPoints: {
         min?: number
@@ -22,6 +23,8 @@ export class FilterState {
     publishers: Set<string> = new Set()
     publicationYears: Set<number> = new Set()
     publicationTypes: Set<string> = new Set()
+    academicTitles: Set<string> = new Set()
+    researchAreas: Set<string> = new Set()
     publicationYearFilters: YearScoreFilter[] = []
 
     name?: string
@@ -35,6 +38,7 @@ export class FilterState {
         copied.universities = new Set(this.universities)
         copied.institutes = new Set(this.institutes)
         copied.cathedras = new Set(this.cathedras)
+        copied.departments = new Set(this.departments)
 
         copied.ministerialPoints.min = this.ministerialPoints.min
         copied.ministerialPoints.max = this.ministerialPoints.max
@@ -46,6 +50,9 @@ export class FilterState {
         copied.publishers = new Set(this.publishers)
         copied.publicationYears = new Set(this.publicationYears)
         copied.publicationYearFilters = Array.of(...this.publicationYearFilters)
+        copied.academicTitles = new Set(this.academicTitles)
+        copied.researchAreas = new Set(this.researchAreas)
+
         copied.extendedTabs = new Set(this.extendedTabs)
 
         copied.name = this.name
@@ -56,6 +63,7 @@ export class FilterState {
 
     async search(pageLimit: number, page?: number): Promise<SearchResponse | null> {
         return await fetchSearch({
+            academicTitles: this.academicTitles.values().toArray(),
             organizations: this.getAllOrganizationNames(),
             limit: pageLimit,
             page: page,
@@ -71,6 +79,7 @@ export class FilterState {
             surname: this.surname,
             journalTypes: this.publicationTypes.values().toArray(),
             yearScoreFilters: this.publicationYearFilters.values().toArray(),
+            researchAreas: this.researchAreas.values().toArray(),
         })
     }
 
@@ -78,6 +87,7 @@ export class FilterState {
         this.universities.clear()
         this.institutes.clear()
         this.cathedras.clear()
+        this.departments.clear()
         this.positions.clear()
         this.ministerialPoints.min = undefined
         this.ministerialPoints.max = undefined
@@ -85,9 +95,11 @@ export class FilterState {
         this.publicationCount.max = undefined
         this.ifScore.min = undefined
         this.ifScore.max = undefined
+        this.academicTitles.clear()
         this.publishers.clear()
         this.publicationYears.clear()
         this.publicationTypes.clear()
+        this.researchAreas.clear()
         this.publicationYearFilters = []
         this.name = undefined
         this.surname = undefined
@@ -95,13 +107,16 @@ export class FilterState {
         deleteCookie(FilterState.COOKIE_UNIVERSITIES, { sameSite: "strict" })
         deleteCookie(FilterState.COOKIE_INSTITUTES, { sameSite: "strict" })
         deleteCookie(FilterState.COOKIE_CATHEDRAS, { sameSite: "strict" })
+        deleteCookie(FilterState.COOKIE_DEPARTMENTS, { sameSite: "strict" })
         deleteCookie(FilterState.COOKIE_POSITIONS, { sameSite: "strict" })
         deleteCookie(FilterState.COOKIE_MINISTERIAL_POINTS_MIN, { sameSite: "strict" })
         deleteCookie(FilterState.COOKIE_MINISTERIAL_POINTS_MAX, { sameSite: "strict" })
         deleteCookie(FilterState.COOKIE_PUBLICATION_COUNT_MIN, { sameSite: "strict" })
         deleteCookie(FilterState.COOKIE_PUBLICATION_COUNT_MAX, { sameSite: "strict" })
+        deleteCookie(FilterState.COOKIE_RESEARCH_AREAS, { sameSite: "strict" })
         deleteCookie(FilterState.COOKIE_IF_SCORE_MIN, { sameSite: "strict" })
         deleteCookie(FilterState.COOKIE_IF_SCORE_MAX, { sameSite: "strict" })
+        deleteCookie(FilterState.COOKIE_ACADEMIC_TITLE, { sameSite: "strict" })
         deleteCookie(FilterState.COOKIE_PUBLISHERS, { sameSite: "strict" })
         deleteCookie(FilterState.COOKIE_PUBLICATION_YEARS, { sameSite: "strict" })
         deleteCookie(FilterState.COOKIE_PUBLICATION_TYPE, { sameSite: "strict" })
@@ -119,6 +134,7 @@ export class FilterState {
         return this.universities.size > 0
             || this.institutes.size > 0
             || this.cathedras.size > 0
+            || this.departments.size > 0
             || this.positions.size > 0
             || this.ministerialPoints.min !== undefined
             || this.ministerialPoints.max !== undefined
@@ -126,10 +142,12 @@ export class FilterState {
             || this.publicationCount.max !== undefined
             || this.ifScore.min !== undefined
             || this.ifScore.max !== undefined
+            || this.academicTitles.size > 0
             || this.publishers.size > 0
             || this.publicationYears.size > 0
             || this.publicationTypes.size > 0
             || this.publicationYearFilters.length > 0
+            || this.researchAreas.size > 0
             || this.name !== undefined
             || this.surname !== undefined
     }
@@ -144,6 +162,9 @@ export class FilterState {
         }
         for(const cathedra of this.cathedras) {
             combined.push(cathedra)
+        }
+        for(const department of this.departments) {
+            combined.push(department)
         }
 
         return combined
@@ -167,8 +188,20 @@ export class FilterState {
         })
     }
 
+    syncDepartmentCookie() {
+        setCookie(FilterState.COOKIE_DEPARTMENTS, packCookieSet(this.departments), {
+            sameSite: "strict"
+        })
+    }
+
     syncPositionCookie() {
         setCookie(FilterState.COOKIE_POSITIONS, packCookieSet(this.positions), {
+            sameSite: "strict"
+        })
+    }
+
+    syncAcademicTitleCookie() {
+        setCookie(FilterState.COOKIE_ACADEMIC_TITLE, packCookieSet(this.academicTitles), {
             sameSite: "strict"
         })
     }
@@ -247,6 +280,12 @@ export class FilterState {
         })
     }
 
+    syncResearchAreaCookie() {
+        setCookie(FilterState.COOKIE_RESEARCH_AREAS, packCookieSet(this.researchAreas), {
+            sameSite: "strict"
+        })
+    }
+
     syncIFScoreCookie() {
         if(this.ifScore.min !== undefined) {
             setCookie(FilterState.COOKIE_IF_SCORE_MIN, this.ifScore.min, {
@@ -267,12 +306,6 @@ export class FilterState {
                 sameSite: "strict"
             })
         }
-    }
-
-    syncPublicationYearCookie() {
-        setCookie(FilterState.COOKIE_PUBLICATION_YEARS, packCookieSet(this.publicationYears), {
-            sameSite: "strict"
-        })
     }
 
     syncPublicationTypeCookie() {
@@ -297,11 +330,14 @@ export class FilterState {
         this.universities = unpackCookie(cookies[FilterState.COOKIE_UNIVERSITIES])
         this.institutes = unpackCookie(cookies[FilterState.COOKIE_INSTITUTES])
         this.cathedras = unpackCookie(cookies[FilterState.COOKIE_CATHEDRAS])
+        this.departments = unpackCookie(cookies[FilterState.COOKIE_DEPARTMENTS])
         this.positions = unpackCookie(cookies[FilterState.COOKIE_POSITIONS])
         this.publishers = unpackCookie(cookies[FilterState.COOKIE_PUBLISHERS])
         this.publicationYears = unpackCookie(cookies[FilterState.COOKIE_PUBLICATION_YEARS])
         this.publicationTypes = unpackCookie(cookies[FilterState.COOKIE_PUBLICATION_TYPE])
         this.publicationYearFilters = unpackArrayCookie(cookies[FilterState.COOKIE_YEAR_SCORE])
+        this.academicTitles = unpackCookie(cookies[FilterState.COOKIE_ACADEMIC_TITLE])
+        this.researchAreas = unpackCookie(cookies[FilterState.COOKIE_RESEARCH_AREAS])
 
         // NaN values get converted to `undefined`
         this.ministerialPoints.min = Number(cookies[FilterState.COOKIE_MINISTERIAL_POINTS_MIN]) || undefined
@@ -321,13 +357,14 @@ export class FilterState {
         }
 
         this.extendedTabs = unpackCookie(cookies[FilterState.COOKIE_EXTENDED_TABS])
-        console.log(this.extendedTabs)
     }
 
     static readonly COOKIE_UNIVERSITIES: string = "universities"
     static readonly COOKIE_INSTITUTES: string = "institutes"
     static readonly COOKIE_CATHEDRAS: string = "cathedras"
+    static readonly COOKIE_DEPARTMENTS: string = "departments";
     static readonly COOKIE_POSITIONS: string = "positions"
+    static readonly COOKIE_RESEARCH_AREAS: string = "researchAreas"
     static readonly COOKIE_IF_SCORE_MIN: string = "ifScoreMin"
     static readonly COOKIE_IF_SCORE_MAX: string = "ifScoreMax"
     static readonly COOKIE_PUBLISHERS: string = "publishers"
@@ -337,6 +374,7 @@ export class FilterState {
     static readonly COOKIE_PUBLICATION_COUNT_MAX: string = "publicationCountMax"
     static readonly COOKIE_PUBLICATION_YEARS: string = "publicationYears"
     static readonly COOKIE_PUBLICATION_TYPE: string = "publicationType"
+    static readonly COOKIE_ACADEMIC_TITLE: string = "academicTitles"
     static readonly COOKIE_NAME: string = "name"
     static readonly COOKIE_SURNAME: string = "surname"
     static readonly COOKIE_YEAR_SCORE: string = "yearScore"

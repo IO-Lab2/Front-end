@@ -116,6 +116,7 @@ export interface PublicationScore {
     year?: string
 }
 
+interface AcademicTitle { title?: string }
 interface PublicationYear { publication_date?: string }
 interface Publisher { publisher?: string }
 interface ScientistPosition { position?: string }
@@ -129,7 +130,7 @@ export async function fetchGetOrganizationsTree(id: UUID | null): Promise<GetOrg
         return await fetch("https://api.epickaporownywarkabazwiedzyuczelni.rocks/api/filters/organizations-tree?" + queryParams, {
             method: "GET",
             cache: "force-cache"
-        }).then(res => res.json())
+        }).then(res => res.json()).catch(() => null)
     } catch(ex) {
         console.error(`Nie udało się pobrać danych o drzewie organizacji (root: ${id ?? "null"}): ${ex}`)
         return null
@@ -141,7 +142,7 @@ export async function fetchGetOrganizationsFilter(): Promise<GetOrganizationsFil
         return await fetch("https://api.epickaporownywarkabazwiedzyuczelni.rocks/api/filters/organizations", {
             method: "GET",
             cache: "force-cache"
-        }).then(res => res.json())
+        }).then(res => res.json()).catch(() => null)
     } catch(ex) {
         console.error(`Nie udało się pobrać danych o organizacjach: ${ex}`)
         return null
@@ -153,7 +154,7 @@ export async function fetchPublicationCountRange(): Promise<APIRange> {
         return await fetch("https://api.epickaporownywarkabazwiedzyuczelni.rocks/api/filters/publication-counts", {
             method: "GET",
             cache: "force-cache"
-        }).then(res => res.json())
+        }).then(res => res.json()).catch(() => null)
     } catch(ex) {
         console.error(`Nie udało się pobrać zakresu ilości publikacji: ${ex}`)
         return { largest: 0, smallest: 0 }
@@ -175,7 +176,7 @@ export async function fetchImpactFactorRange(): Promise<APIRange> {
         return await fetch("https://api.epickaporownywarkabazwiedzyuczelni.rocks/api/filters/impact-factors", {
             method: "GET",
             cache: "force-cache"
-        }).then(res => res.json())
+        }).then(res => res.json()).catch(() => null)
     } catch(ex) {
         console.error(`Nie udało się pobrać zakresu wyniku impact factor: ${ex}`)
         return { largest: 0, smallest: 0 }
@@ -187,7 +188,7 @@ export async function fetchPublishers() : Promise<string[]> {
         const publishers = await fetch("https://api.epickaporownywarkabazwiedzyuczelni.rocks/api/filters/publishers", {
             method: "GET",
             cache: "force-cache"
-        }).then(res => res.json())
+        }).then(res => res.json()).catch(() => null)
 
         if(Array.isArray(publishers)) {
             return publishers.flatMap(publisher => {
@@ -207,7 +208,7 @@ export async function fetchPositions(): Promise<string[]> {
         const positions = await fetch("https://api.epickaporownywarkabazwiedzyuczelni.rocks/api/filters/positions", {
             method: "GET",
             cache: "force-cache"
-        }).then(res => res.json())
+        }).then(res => res.json()).catch(() => null)
 
         if(Array.isArray(positions)) {
             return positions.flatMap(position => {
@@ -222,15 +223,37 @@ export async function fetchPositions(): Promise<string[]> {
     }
 }
 
-export async function fetchResearchAreas(): Promise<ResearchArea[]> {
+export async function fetchAcademicTitles(): Promise<string[]> {
     try {
-        const areas = await fetch("https://api.epickaporownywarkabazwiedzyuczelni.rocks/api/filters/research-areas", {
+        const titles = await fetch("https://api.epickaporownywarkabazwiedzyuczelni.rocks/api/filters/academic-titles", {
             method: "GET",
             cache: "force-cache"
-        }).then(res => res.json())
+        }).then(res => res.json()).catch(() => null)
+
+        if(Array.isArray(titles)) {
+            return titles.flatMap(title => {
+                return (title as AcademicTitle).title ?? []
+            })
+        } else {
+            return []
+        }
+    } catch(ex) {
+        console.error(`Nie udało się pobrać listy tytułów akademickich: ${ex}`)
+        return []
+    }
+}
+
+export async function fetchResearchAreas(): Promise<string[]> {
+    try {
+        const areas = await fetch("https://api.epickaporownywarkabazwiedzyuczelni.rocks/api/research-areas", {
+            method: "GET",
+            cache: "force-cache"
+        }).then(res => res.json()).catch(() => null)
 
         if(Array.isArray(areas)) {
-            return areas
+            return areas.flatMap(area => {
+                return (area as ResearchArea).name ?? []
+            })
         } else {
             return []
         }
@@ -245,7 +268,7 @@ export async function fetchPublicationYears(): Promise<number[]> {
         const years = await fetch("https://api.epickaporownywarkabazwiedzyuczelni.rocks/api/filters/publication-years", {
             method: "GET",
             cache: "force-cache"
-        }).then(res => res.json())
+        }).then(res => res.json()).catch(() => null)
 
         if(Array.isArray(years)) {
             return years.flatMap(year => {
@@ -265,7 +288,7 @@ export async function fetchJournalTypes(): Promise<string[]> {
         const journals = await fetch("https://api.epickaporownywarkabazwiedzyuczelni.rocks/api/filters/journal-types", {
             method: "GET",
             cache: "force-cache"
-        }).then(res => res.json())
+        }).then(res => res.json()).catch(() => null)
 
         if(Array.isArray(journals)) {
             return journals.flatMap(journal => {
@@ -285,7 +308,7 @@ export async function fetchScientistInfo(id: string): Promise<Scientist | null> 
         return await fetch(`https://api.epickaporownywarkabazwiedzyuczelni.rocks/api/scientists/${id}`, {
             method: "GET",
             cache: "force-cache"
-        }).then(res => res.json())
+        }).then(res => res.json()).catch(() => null)
     } catch(ex) {
         console.error(`Nie udało się pobrać informacji o naukowcu: ${ex}`)
         return null
@@ -297,7 +320,7 @@ export async function fetchOrganizationsByScientistID(id: string): Promise<Organ
         const orgs = await fetch(`https://api.epickaporownywarkabazwiedzyuczelni.rocks/api/organizations/scientist/${id}`, {
             method: "GET",
             cache: "force-cache"
-        }).then(res => res.json())
+        }).then(res => res.json()).catch(() => null)
 
         if(Array.isArray(orgs)) {
             return orgs
@@ -315,7 +338,7 @@ export async function fetchPublicationsByScientistID(id: string): Promise<Public
         const publications = await fetch(`https://api.epickaporownywarkabazwiedzyuczelni.rocks/api/scientists_publications/${id}`, {
             method: "GET",
             cache: "force-cache"
-        }).then(res => res.json())
+        }).then(res => res.json()).catch(() => null)
 
         if(Array.isArray(publications)) {
             return publications
@@ -387,7 +410,7 @@ export async function fetchSearch(query: SearchQuery): Promise<SearchResponse | 
         return await fetch("https://api.epickaporownywarkabazwiedzyuczelni.rocks/api/search?" + queryParams, {
             method: "GET",
             cache: "no-cache"
-        }).then(res => res.json())
+        }).then(res => res.json()).catch(() => null)
     } catch(ex) {
         console.error(`Wyszukiwanie nie powiodło się: ${ex}`)
         return null
