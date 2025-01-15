@@ -515,14 +515,17 @@ export default function ViewPage() {
 
     let resultCountSuffix: string
     switch((totalScientistCount ?? 0) % 10) {
-        case 1:
-            resultCountSuffix = ""
-            break
         case 2:
         case 3:
         case 4:
             resultCountSuffix = "i"
             break
+        case 1:
+            if(totalScientistCount == 1) {
+                resultCountSuffix = ""
+                break
+            }
+            // fallthrough
         default:
             resultCountSuffix = "ów"
             break

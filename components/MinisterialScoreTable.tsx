@@ -18,7 +18,7 @@ export default function MinisterialScoreTable(props: MinisterialScoreTableProps)
         }, 0)
 
         return props.scores
-            .filter((score) => score.year)
+            .filter((score) => Boolean(score.year && score.score))
             .sort((left, right) => {
                 return (Number(right.year) || 0) - (Number(left.year) || 0)
             })
@@ -41,7 +41,7 @@ export default function MinisterialScoreTable(props: MinisterialScoreTableProps)
 
     return <div>
         <div className={`p-4 ${highContrastMode ? "bg-black text-white" : "bg-black/80 text-basetext"} rounded-t-2xl text-basetext text-center text-2xl font-bold`}>
-            Publication Score:
+            Punkty ministerialne:
         </div>
         <div className={`flex`}>
             {scores}

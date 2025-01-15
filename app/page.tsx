@@ -33,7 +33,7 @@ export default function Home() {
                 </div>
                 <div>
                     <h4 className={`font-playfair font-extrabold text-black text-center text-2xl`}>
-                        Twoje centrum wiedzy akademickiej - znajdź publikacje, profesorów i badania w jednym
+                        Twoje centrum wiedzy akademickiej - znajdź publikacje, naukowców i badania w jednym
                         miejscu!
                     </h4>
                 </div>
@@ -55,10 +55,10 @@ export default function Home() {
     } else {
         pageContents = <>
             <FilterHeaderTable
-                header={`Wybierz Instytut:`}
+                header={`Wybierz organizację:`}
                 parentOrg={universityChoice ?? undefined}
                 onChoice={(org: Organization) => {
-                    console.log(`Wybrano instytut: ${org.name}`)
+                    console.log(`Wybrano organizację: ${org.name}`)
                     setCookie(FilterState.COOKIE_INSTITUTES, JSON.stringify([org.name]), {
                         sameSite: "strict"
                     })
